@@ -1,0 +1,20 @@
+syntax: glob
+Unicorn.Web/obj/Debug/Unicorn.Web.pdb
+Unicorn.Web/obj/Debug/Unicorn.Web.dll
+Unicorn.Web/obj/Debug/Unicorn.Web.csprojResolveAssemblyReference.cache
+Unicorn.Web/obj/Debug/Unicorn.Web.csproj.FileListAbsolute.txt
+Unicorn.Web/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+Unicorn.Web/bin/Debug/Unicorn.Web.pdb
+Unicorn.Web/bin/Debug/Unicorn.Web.dll
+Unicorn.Web/bin/Debug/Unicorn.Data.pdb
+Unicorn.Web/bin/Debug/Unicorn.Data.dll
+Unicorn.Web/bin/Debug/TimePicker.dll
+Unicorn.Web/bin/Debug/Telerik.Web.UI.xml
+Unicorn.Web/bin/Debug/Telerik.Web.UI.dll
+Unicorn.Data/obj/Debug/Unicorn.Data.pdb
+Unicorn.Data/obj/Debug/Unicorn.Data.dll
+Unicorn.Data/obj/Debug/Unicorn.Data.csprojResolveAssemblyReference.cache
+Unicorn.Data/obj/Debug/Unicorn.Data.csproj.FileListAbsolute.txt
+Unicorn.Data/obj/Debug/DesignTimeResolveAssemblyReferencesInput.cache
+Unicorn.Data/bin/Debug/Unicorn.Data.pdb
+Unicorn.Data/bin/Debug/Unicorn.Data.dll

@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>
+    </ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{12C9FAD7-31F2-45AB-B1DD-0760236EA7A0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Unicorn.Web</RootNamespace>
+    <AssemblyName>Unicorn.Web</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.Web.ApplicationServices" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Web" />
+    <Reference Include="Telerik.Web.UI">
+      <HintPath>C:\Program Files (x86)\Telerik\RadControls for ASP.NET AJAX Q1 2012\Bin40\Telerik.Web.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="TimePicker">
+      <HintPath>D:\Downloads\Programming\TimePicker\TimePicker.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ControlUtility.cs" />
+    <Compile Include="PageBase.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\Authorization\AuthorizationChecker.cs" />
+    <Compile Include="Security\Authorization\AuthorizationManager.cs" />
+    <Compile Include="Security\Authorization\AuthorizationPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\Authorization\AuthorizeActionAttribute.cs" />
+    <Compile Include="Security\Authorization\AuthorizedAction.cs" />
+    <Compile Include="Security\Authorization\AuthorizeRoleAttribute.cs" />
+    <Compile Include="Security\Authorization\AuthorizeUserAttribute.cs" />
+    <Compile Include="Security\Authorization\IAuthorize.cs" />
+    <Compile Include="Security\Authorization\TitleAttribute.cs" />
+    <Compile Include="Security\Configuration\AccessActionsSection.cs" />
+    <Compile Include="Security\Configuration\ConfigInitializer.cs" />
+    <Compile Include="Security\Configuration\ConfigurationPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\Configuration\ConfigUtility.cs" />
+    <Compile Include="Security\Configuration\UniSecuritySectionGroup.cs" />
+    <Compile Include="Security\Configuration\MasterPageSection.cs" />
+    <Compile Include="Security\Configuration\WebConfigInitializer.cs" />
+    <Compile Include="Security\CreateUserPage.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\UniHttpHandler.cs" />
+    <Compile Include="Security\UniMembershipProvider.cs" />
+    <Compile Include="Security\UniProfile.cs" />
+    <Compile Include="Security\UniRole.cs" />
+    <Compile Include="Security\UniRoles.cs" />
+    <Compile Include="Security\MyRoleManager.cs" />
+    <Compile Include="Security\PageWithMaster.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Security\PersonalizationProviderHelper.cs" />
+    <Compile Include="Security\SecUtil.cs" />
+    <Compile Include="UI\DataForm\AutomaticDataColumn.cs" />
+    <Compile Include="UI\DataForm\DataColumn.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\DateTemplate.cs" />
+    <Compile Include="UI\EditUserRoles.cs" />
+    <Compile Include="UI\IDataControl.cs" />
+    <Compile Include="UI\AdminMenu.cs" />
+    <Compile Include="UI\ChangePassword.cs" />
+    <Compile Include="UI\CreateUserWizard.cs" />
+    <Compile Include="UI\UniDataForm.cs" />
+    <Compile Include="UI\UniDataGrid.cs" />
+    <Compile Include="UI\UniDataToolbar.cs" />
+    <Compile Include="UI\UniDatePicker.cs" />
+    <Compile Include="UI\EditUser.cs" />
+    <Compile Include="UI\Login.cs" />
+    <Compile Include="UI\LoginStatus.cs" />
+    <Compile Include="UI\LoginView.cs" />
+    <Compile Include="UI\ManageAllRoles.cs" />
+    <Compile Include="UI\ManageSingleRole.cs" />
+    <Compile Include="UI\ManageUsers.cs" />
+    <Compile Include="UI\UniHtmlList.cs" />
+    <Compile Include="UI\UniNumericBox.cs" />
+    <Compile Include="UI\UniSearchBox.cs" />
+    <Compile Include="UI\UniTextBox.cs" />
+    <Compile Include="Utility.cs" />
+    <Compile Include="WebUtility.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Unicorn.Data\Unicorn.Data.csproj">
+      <Project>{6FE39701-A44E-4F7E-9F31-52526D877281}</Project>
+      <Name>Unicorn.Data</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\control.css" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\PersianDatePicker.css" />
+    <EmbeddedResource Include="Resources\page.css" />
+    <EmbeddedResource Include="Resources\js\PersianDatePicker.js" />
+    <EmbeddedResource Include="Resources\js\DataToolbar.js" />
+    <EmbeddedResource Include="Resources\js\dataGrid.js" />
+    <EmbeddedResource Include="Resources\Images\SearchWin.png" />
+    <EmbeddedResource Include="Resources\Images\Save.png" />
+    <EmbeddedResource Include="Resources\Images\Print.png" />
+    <EmbeddedResource Include="Resources\Images\Prev.png" />
+    <EmbeddedResource Include="Resources\Images\Next.png" />
+    <EmbeddedResource Include="Resources\Images\New.png" />
+    <EmbeddedResource Include="Resources\Images\Last.png" />
+    <EmbeddedResource Include="Resources\Images\FormFind.png" />
+    <EmbeddedResource Include="Resources\Images\First.png" />
+    <EmbeddedResource Include="Resources\Images\Delete.png" />
+    <EmbeddedResource Include="Resources\Images\Clear.png" />
+    <EmbeddedResource Include="Resources\Images\calendar.gif" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Data\Membership.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Data\SQLiteMembership.sql" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
