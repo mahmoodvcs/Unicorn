@@ -4,6 +4,7 @@ using System.Text;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
+using System.IO;
 
 namespace Unicorn
 {
@@ -23,6 +24,24 @@ namespace Unicorn
 
     public static class ImageResizer
     {
+        public static Image GetImage(byte[] bs)
+        {
+            var ms = new MemoryStream(bs);
+            Image img = Image.FromStream(ms);
+            ms.Close();
+            ms.Dispose();
+            return img;
+        }
+        public static byte[] GetBytes(Image img)
+        {
+            MemoryStream ms = new MemoryStream();
+            img.Save(ms, ImageFormat.Jpeg);
+            byte[] bs = ms.ToArray();
+            ms.Close();
+            ms.Dispose();
+            return bs;
+        }
+
         /// <summary>
         /// It will not change the image ratio.
         /// </summary>
