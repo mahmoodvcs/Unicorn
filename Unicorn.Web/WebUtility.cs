@@ -5,6 +5,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.HtmlControls;
 using System.Web;
+using System.IO;
 
 namespace Unicorn.Web
 {
@@ -222,6 +223,51 @@ namespace Unicorn.Web
             if (path[0] != '/')
                 path = "/" + path;
             return path;
+        }
+
+        public static string GetContentTypeFromFileName(string fileName)
+        {
+            return GetContentType(Path.GetExtension(fileName));
+        }
+        public static string GetContentType(string extention)
+        {
+            switch (extention)
+            {
+                case ".avi":
+                    return "video/avi";
+                case ".bmp":
+                    return "image/bmp";
+                case ".doc":
+                case ".docx":
+                    return "application/msword";
+                case ".jpeg":
+                case ".jpg":
+                    return "image/jpeg";
+                case ".mov":
+                    return "video/quicktime";
+                case ".mp3":
+                    return "audio/mpeg3";
+                case ".mp4":
+                    return "audio/mp4";
+                case ".mpeg":
+                case ".mpg":
+                    return "video/mpeg";
+                case ".rtf":
+                    return "application/rtf";
+                case ".tif":
+                case ".tiff":
+                    return "image/tiff";
+                case ".txt":
+                    return "text/plain";
+                case ".wav":
+                    return "audio/wav";
+                case ".xls":
+                case ".xlsx":
+                    return "application/x-excel";
+                case ".zip":
+                    return "application/x-compressed";
+            }
+            return "application/octet-stream";
         }
     }
 

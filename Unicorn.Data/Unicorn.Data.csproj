@@ -46,10 +46,12 @@
     <Compile Include="DbDataReaderMethods.cs" />
     <Compile Include="DBDataUtility.cs" />
     <Compile Include="ImageResizer.cs" />
+    <Compile Include="MultiKeyDictionary.cs" />
     <Compile Include="PersianDateTime.cs" />
     <Compile Include="PersianDateTimeConverter.cs" />
     <Compile Include="Record.cs" />
     <Compile Include="ConnectionManager.cs" />
+    <Compile Include="SqlReaderStream.cs" />
     <Compile Include="TransactionScope.cs" />
     <Compile Include="SqlHelper.cs" />
     <Compile Include="ColumnInfo.cs" />
