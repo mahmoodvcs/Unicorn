@@ -68,7 +68,7 @@ namespace Unicorn.Web.Security.Authorization
         {
             string action = parentAction;
             bool temp;
-            bool hasAccess = parentAccess || Utility.HasSiteMapNodeAccess(parentAction, Roles.GetRolesForUser(), User, node, ref action, out temp);
+            bool hasAccess = parentAccess || Utility.HasSiteMapNodeAccess(parentAction, Roles.GetRolesForUser(), node, ref action, out temp);
             XmlAttribute urlAttr = node.Attributes["url"];
             string pageUrl = GetPageUrl();
             if (urlAttr != null)

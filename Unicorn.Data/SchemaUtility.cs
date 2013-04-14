@@ -223,9 +223,9 @@ namespace Unicorn.Data
             //DbCommand command = SqlHelper.CreateCommand();
             //command.CommandType = CommandType.Text;
             //bool close = Helper.OpenConnection(connection);
-            if (dbTable == null)
+            using (TransactionScope tran = new TransactionScope())
             {
-                using (TransactionScope tran = new TransactionScope())
+                if (dbTable == null)
                 {
                     //try
                     //{
@@ -235,7 +235,6 @@ namespace Unicorn.Data
                     {
                         SqlHelper.ExecuteNonQuery(GenerateCreateForeignKeysStatement(table.TableName, table.ForeignKeys));
                     }
-                    tran.Complete();
                     //command.Transaction.Commit();
                     //}
                     //catch (SqlException)
@@ -245,96 +244,93 @@ namespace Unicorn.Data
                     //    throw;
                     //}
                 }
-            }
-            else
-            {
-                List<ColumnInfo> alter = new List<ColumnInfo>();
-                List<ColumnInfo> add = new List<ColumnInfo>();
-                foreach (ColumnInfo column in table.Columns)
+                else
                 {
-                    ColumnInfo dbColumn = null;
-                    foreach (ColumnInfo ci in dbTable.Columns)
-                        if (ci.ColumnName == column.ColumnName)
-                        {
-                            dbColumn = ci;
-                            break;
-                        }
-                    if (dbColumn == null)
-                        add.Add(column);
-                    else if (column != dbColumn)
-                        alter.Add(column);
-                }
-                string alterTable = "ALTER TABLE " + table.FullName + " ";
-                StringBuilder sb = new StringBuilder();
-                if (add.Count > 0)
-                {
-                    sb.Append(alterTable).Append("ADD ");
-                    bool b = true;
-                    foreach (ColumnInfo ci in add)
+                    List<ColumnInfo> alter = new List<ColumnInfo>();
+                    List<ColumnInfo> add = new List<ColumnInfo>();
+                    foreach (ColumnInfo column in table.Columns)
                     {
-                        if (b)
-                            b = false;
-                        else
-                            sb.Append(", ");
-                        sb.Append(ci.GetColumnDefinition(dbType));
+                        ColumnInfo dbColumn = null;
+                        foreach (ColumnInfo ci in dbTable.Columns)
+                            if (ci.ColumnName == column.ColumnName)
+                            {
+                                dbColumn = ci;
+                                break;
+                            }
+                        if (dbColumn == null)
+                            add.Add(column);
+                        else if (column != dbColumn)
+                            alter.Add(column);
                     }
-                    sb.Append(Environment.NewLine);
-                }
-                foreach (ColumnInfo ci in alter)
-                    sb.Append(alterTable).Append("ALTER COLUMN ").Append(ci.GetColumnDefinition(dbType)).Append(Environment.NewLine);
+                    string alterTable = "ALTER TABLE " + table.FullName + " ";
+                    StringBuilder sb = new StringBuilder();
+                    if (add.Count > 0)
+                    {
+                        sb.Append(alterTable).Append("ADD ");
+                        bool b = true;
+                        foreach (ColumnInfo ci in add)
+                        {
+                            if (b)
+                                b = false;
+                            else
+                                sb.Append(", ");
+                            sb.Append(ci.GetColumnDefinition(dbType));
+                        }
+                        sb.Append(Environment.NewLine);
+                    }
+                    foreach (ColumnInfo ci in alter)
+                        sb.Append(alterTable).Append("ALTER COLUMN ").Append(ci.GetColumnDefinition(dbType)).Append(Environment.NewLine);
 
-                dbTable.ForeignKeys.Load();
-                foreach (ColumnInfo column in dbTable.Columns)
-                {
-                    bool found = false;
-                    foreach (ColumnInfo ci in table.Columns)
-                        if (ci.ColumnName == column.ColumnName)
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (!found)
+                    dbTable.ForeignKeys.Load();
+                    foreach (ColumnInfo column in dbTable.Columns)
                     {
-                        string cn = GetDefaultConstraint(table.TableName, column.ColumnName);
-                        if( cn != null )
-                            sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(cn).Append(Environment.NewLine);
-                        var fk = dbTable.ForeignKeys.FirstOrDefault(ff => ff.FKField == column.ColumnName);
-                        if( fk != null)
-                            sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(fk.Name).Append(Environment.NewLine);
-                        sb.Append(alterTable).Append("DROP COLUMN ").Append(column.ColumnName).Append(Environment.NewLine);
+                        bool found = false;
+                        foreach (ColumnInfo ci in table.Columns)
+                            if (ci.ColumnName == column.ColumnName)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if (!found)
+                        {
+                            string cn = GetDefaultConstraint(table.TableName, column.ColumnName);
+                            if (cn != null)
+                                sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(cn).Append(Environment.NewLine);
+                            var fk = dbTable.ForeignKeys.FirstOrDefault(ff => ff.FKField == column.ColumnName);
+                            if (fk != null)
+                                sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(fk.Name).Append(Environment.NewLine);
+                            sb.Append(alterTable).Append("DROP COLUMN ").Append(column.ColumnName).Append(Environment.NewLine);
+                        }
                     }
-                }
-                List<ForeignKeyRelation> fks = new List<ForeignKeyRelation>();
-                foreach (var fk in table.ForeignKeys)
-                {
-                    bool found = false;
+                    List<ForeignKeyRelation> fks = new List<ForeignKeyRelation>();
+                    foreach (var fk in table.ForeignKeys)
+                    {
+                        bool found = false;
+                        foreach (ForeignKeyRelation dbfk in dbTable.ForeignKeys)
+                            if (fk == dbfk)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if (!found)
+                            fks.Add(fk);
+                    }
                     foreach (ForeignKeyRelation dbfk in dbTable.ForeignKeys)
-                        if (fk == dbfk)
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (!found)
-                        fks.Add(fk);
-                }
-                foreach (ForeignKeyRelation dbfk in dbTable.ForeignKeys)
-                {
-                    bool found = false;
-                    foreach (ForeignKeyRelation fk in table.ForeignKeys)
-                        if (fk == dbfk)
-                        {
-                            found = true;
-                            break;
-                        }
-                    if (!found)
-                        sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(dbfk.Name).Append(Environment.NewLine);
-                }
+                    {
+                        bool found = false;
+                        foreach (ForeignKeyRelation fk in table.ForeignKeys)
+                            if (fk == dbfk)
+                            {
+                                found = true;
+                                break;
+                            }
+                        if (!found)
+                            sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(dbfk.Name).Append(Environment.NewLine);
+                    }
 
-                //try
-                //{
-                //    command.Transaction = command.Connection.BeginTransaction();
-                using (TransactionScope tran = new TransactionScope())
-                {
+                    //try
+                    //{
+                    //    command.Transaction = command.Connection.BeginTransaction();
                     if (sb.Length > 0)
                     {
                         //command.CommandText = sb.ToString();
@@ -352,8 +348,11 @@ namespace Unicorn.Data
                     //    command.Transaction.Rollback();
                     //    throw;
                     //}
-                    tran.Complete();
                 }
+                //DBDataUtility.AddTableDescription(table.TableName, table.Title);
+                //foreach (var f in table.Columns)
+                //    DBDataUtility.AddFieldDescription(table.TableName, f.ColumnName, f.Title);
+                tran.Complete();
             }
             //Helper.CloseConnection(connection, close);
         }

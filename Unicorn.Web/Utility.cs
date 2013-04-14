@@ -8,6 +8,7 @@ using System.Xml;
 using System.Web.Security;
 using Unicorn.Web.Security.Authorization;
 using System.Web;
+using System.Linq;
 
 namespace Unicorn.Web
 {
@@ -45,17 +46,20 @@ namespace Unicorn.Web
             Type type = menu.GetType();
             PropertyInfo itemsProperty = type.GetProperty("Items", BindingFlags.Instance | BindingFlags.Public);
             object items = itemsProperty.GetValue(menu, null);
-            MethodInfo clearMethod = itemsProperty.PropertyType.GetMethod("Clear", BindingFlags.Public | BindingFlags.Instance);
+            MethodInfo[] methods = itemsProperty.PropertyType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
+            MethodInfo clearMethod = methods.First(m => m.Name == "Clear");
             clearMethod.Invoke(items, null);
-            MethodInfo addMethod = itemsProperty.PropertyType.GetMethod("Add", BindingFlags.Public | BindingFlags.Instance);
+            MethodInfo addMethod = type.GetMethod("Add", BindingFlags.Public | BindingFlags.Instance);
+            if (addMethod == null)
+                addMethod = methods.First(m => m.Name == "Add" && !m.GetParameters()[0].GetType().FullName.EndsWith("Control"));
             XmlDocument doc = new XmlDocument();
-            Page p = (Page)type.GetProperty("Page").GetValue(menu, null);
-            doc.Load(p.MapPath("~/Web.sitemap"));
+            //Page p = (Page)type.GetProperty("Page").GetValue(menu, null);
+            doc.Load(HttpContext.Current.Server.MapPath("~/Web.sitemap"));
             //doc.Load(HttpContext.Current.Server.MapPath("~/Web.sitemap"));
             Type itemType = addMethod.GetParameters()[0].ParameterType;
-            BuildSiteMapMenu(items, addMethod, itemType, doc.DocumentElement.FirstChild.ChildNodes, "Menu", Roles.GetRolesForUser(), false, p);
+            BuildSiteMapMenu(menu, items, addMethod, itemType, doc.DocumentElement.FirstChild.ChildNodes, "Menu", Roles.GetRolesForUser(), false);
         }
-        private static void BuildSiteMapMenu(object items, MethodInfo addMethod, Type itemType, XmlNodeList nodes, string parentAction, string[] roles, bool parentAccess, Page p)
+        private static void BuildSiteMapMenu(object menu, object items, MethodInfo addMethod, Type itemType, XmlNodeList nodes, string parentAction, string[] roles, bool parentAccess)
         {
             foreach (XmlNode node in nodes)
             {
@@ -65,7 +69,7 @@ namespace Unicorn.Web
                 bool shouldReturn = false;
                 //if user has access to parent node then he has access to this node and all child nodes. no need to check
                 // more and 'action' is not needed.
-                bool hasAccess = HasSiteMapNodeAccess(parentAction, roles, p.User, node, ref action, out shouldReturn);
+                bool hasAccess = HasSiteMapNodeAccess(parentAction, roles, node, ref action, out shouldReturn);
                 if (shouldReturn)
                     return;
                 object menuItem = CreateMenuIem(node, itemType);
@@ -77,10 +81,14 @@ namespace Unicorn.Web
                         childItemsProp = itemType.GetProperty("MenuItems");
                 }
                 object childItems = childItemsProp.GetValue(menuItem, null);
-                BuildSiteMapMenu(childItems, addMethod, itemType, node.ChildNodes, action, roles, hasAccess, p);
+                var childAddMethod = childItemsProp.PropertyType.GetMethod("Add", BindingFlags.Public | BindingFlags.Instance);
+                BuildSiteMapMenu(menu, childItems, childAddMethod, itemType, node.ChildNodes, action, roles, hasAccess);
                 if (hasAccess || (int)childItemsProp.PropertyType.GetProperty("Count").GetValue(childItems, null) > 0)
                 {
-                    addMethod.Invoke(items, new object[] { menuItem });
+                    if (addMethod.DeclaringType == items.GetType())
+                        addMethod.Invoke(items, new object[] { menuItem });
+                    else
+                        addMethod.Invoke(menu, new object[] { menuItem });
                 }
             }
         }
@@ -92,7 +100,7 @@ namespace Unicorn.Web
             return node.Attributes[attributeName].Value;
         }
 
-        public static bool HasSiteMapNodeAccess(string parentAction, string[] userRoles, System.Security.Principal.IPrincipal user,
+        public static bool HasSiteMapNodeAccess(string parentAction, string[] userRoles,
             XmlNode node, ref string action, out bool shouldReturn)
         {
             shouldReturn = false;
@@ -109,12 +117,13 @@ namespace Unicorn.Web
                 return false;
 
             bool hasAccess = false;
+            System.Security.Principal.IPrincipal user = HttpContext.Current.User;
             if (usersAttrib == null && rolesAttrib == null && actionsAttrib == null && action == null)
             {
                 if (urlAttrib != null)
                 {
                     action = parentAction + "." + urlAttrib.Value;
-                    if (AuthorizationChecker.HasAccess(user.Identity.Name, action))
+                    if (AuthorizationChecker.HasAccess(action))
                         hasAccess = true;
                 }
             }
@@ -159,7 +168,7 @@ namespace Unicorn.Web
             if (action != null)
             {
                 action = parentAction + "." + action;
-                hasAccess = AuthorizationChecker.HasAccess(user.Identity.Name, action);
+                hasAccess = AuthorizationChecker.HasAccess(action);
             }
             return hasAccess;
         }

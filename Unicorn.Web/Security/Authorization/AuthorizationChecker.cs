@@ -62,6 +62,13 @@ namespace Unicorn.Web.Security.Authorization
             return checkAnyAccessToSubActions && allActions.Any(a => a.StartsWith(action + "."));
 
         }
-
+        public static bool HasAccess<EnumType>(EnumType action, bool checkAnyAccessToSubActions = false)
+        {
+            return HasAccess(typeof(EnumType).Name + "." + action.ToString(), checkAnyAccessToSubActions);
+        }
+        public static bool HasAccess<EnumType>(string parentAction, EnumType action, bool checkAnyAccessToSubActions = false)
+        {
+            return HasAccess(parentAction + "." + typeof(EnumType).Name + "." + action.ToString(), checkAnyAccessToSubActions);
+        }
     }
 }

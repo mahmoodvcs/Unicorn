@@ -39,27 +39,50 @@ namespace Unicorn.Web.Security.Authorization
 				ac.AddSubAction(s);
 			}
 		}
-		public static void RegisterAction(Type actionsEnumType)
-		{
-			RegisterAction(actions, actionsEnumType);
-		}
-		public static void RegisterAction(AuthorizedAction parentAction, Type actionsEnumType)
-		{
-			if (!actionsEnumType.IsEnum)
-				throw new ArgumentException("پارامتر بايد از نوع شمارشي باشد.", "actionsEnumType");
-			FieldInfo[] fields = actionsEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
-			foreach (FieldInfo fi in fields)
-			{
-				object[] attrs = fi.GetCustomAttributes(typeof(TitleAttribute), false);
-				AuthorizedAction ac = parentAction.AddSubAction(fi.Name);
-				if (attrs.Length > 0)
-					ac.Title = ((TitleAttribute)attrs[0]).Title;
-			}
-		}
-		public static void RegisterAction(string parentAction, Type actionsEnumType)
-		{
-			RegisterAction(actions.AddSubAction(parentAction), actionsEnumType);
-		}
+        public static void RegisterAction<EnumType>(string parentAction)
+        {
+            RegisterAction(parentAction, typeof(EnumType));
+        }
+        public static void RegisterAction<EnumType>()
+        {
+            RegisterAction(typeof(EnumType));
+        }
+        public static void RegisterAction(Type actionsEnumType)
+        {
+            AuthorizedAction ac = new AuthorizedAction(actionsEnumType.Name);
+            ac.Title = GetTitle(actionsEnumType);
+            actions.SubActions.Add(ac);
+            RegisterAction(ac, actionsEnumType);
+        }
+        public static void RegisterAction(string parentAction, Type actionsEnumType)
+        {
+            var ac = actions[parentAction];
+            if (ac == null)
+                ac = actions.AddSubAction(parentAction);
+            RegisterAction(ac, actionsEnumType);
+        }
+        public static void RegisterAction(AuthorizedAction parentAction, Type actionsEnumType)
+        {
+            if (!actionsEnumType.IsEnum)
+                throw new ArgumentException("پارامتر بايد از نوع شمارشي باشد.", "actionsEnumType");
+            FieldInfo[] fields = actionsEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
+            foreach (FieldInfo fi in fields)
+            {
+                AuthorizedAction ac = parentAction.AddSubAction(fi.Name);
+                ac.Title = GetTitle(fi);
+            }
+        }
+        static string GetTitle(ICustomAttributeProvider p)
+        {
+            object[] attrs = p.GetCustomAttributes(typeof(TitleAttribute), false);
+            if (attrs.Length > 0)
+                return ((TitleAttribute)attrs[0]).Title;
+            return null;
+        }
+        //public static void RegisterAction(string parentAction, Type actionsEnumType)
+        //{
+        //    RegisterAction(actions.AddSubAction(parentAction), actionsEnumType);
+        //}
 		#endregion RegisterAction
 
 		private static SqlConnection GetConnection()
