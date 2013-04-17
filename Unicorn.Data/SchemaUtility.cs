@@ -382,7 +382,13 @@ INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_colu
                 sb.Append("ALTER TABLE ").Append(tableName).Append(" ADD CONSTRAINT FK_")
                     .Append(tableName).Append("_").Append(fk.FKField).Append("_").Append(fk.PKTable).Append(" FOREIGN KEY (")
                     .Append(fk.FKField).Append(") REFERENCES ").Append(fk.PKTable).Append(" (")
-                    .Append(fk.PKField).Append(");").Append(Environment.NewLine);
+                    .Append(fk.PKField).Append(") ");
+                if (fk.CascadeUpdate)
+                    sb.Append("ON UPDATE CASCADE ");
+                if (fk.CascadeDelete)
+                    sb.Append("ON DELETE CASCADE");
+                sb.Append(";");
+                sb.Append(Environment.NewLine);
             }
             return sb.ToString();
         }
@@ -445,6 +451,8 @@ INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_colu
                     r.FKField = dr["FKColumn_Name"].ToString();
                     r.PKTable = dr["PKTable_Name"].ToString();
                     r.PKField = dr["PKColumn_Name"].ToString();
+                    r.CascadeUpdate = dr["UPDATE_RULE"].ToString() == "0";
+                    r.CascadeDelete = dr["DELETE_RULE"].ToString() == "0";
                     r.Name = dr["FK_NAME"].ToString();
                     realations.Add(r);
                     //string fKtableName = dr["FKTable_Name"].ToString();

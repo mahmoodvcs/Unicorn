@@ -11,6 +11,8 @@ namespace Unicorn.Data
         public string FKField { get; set; }
         public string PKTable { get; set; }
         public string PKField { get; set; }
+        public bool CascadeDelete { get; set; }
+        public bool CascadeUpdate { get; set; }
         public string Name { get; set; }
         public static bool operator ==(ForeignKeyRelation c1, ForeignKeyRelation c2)
         {
@@ -21,7 +23,8 @@ namespace Unicorn.Data
                     return false;
             else if (null == (object)c2 )
                 return false;
-            return c1.FKField == c2.FKField && c1.PKField == c2.PKField && c1.PKTable == c2.PKTable;
+            return c1.FKField == c2.FKField && c1.PKField == c2.PKField && c1.PKTable == c2.PKTable 
+                && c1.CascadeDelete == c2.CascadeDelete && c1.CascadeUpdate == c2.CascadeUpdate;
 
         }
         public static bool operator !=(ForeignKeyRelation c1, ForeignKeyRelation c2)
