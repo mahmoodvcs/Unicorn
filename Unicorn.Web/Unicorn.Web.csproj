@@ -44,9 +44,8 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
-    <Reference Include="Telerik.Web.UI, Version=2012.1.215.40, Culture=neutral, PublicKeyToken=121fae78165ba3d4, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Softwares\Software Development\Components\Telerik-Ultimate-2012-Q1\bin 4\Telerik.Web.UI.dll</HintPath>
+    <Reference Include="Telerik.Web.UI">
+      <HintPath>..\..\..\Softwares\Software Development\Components\Telerik\Telerik-Ultimate-2012-Q1\bin 4\Telerik.Web.UI.dll</HintPath>
     </Reference>
     <Reference Include="TimePicker">
       <HintPath>D:\Downloads\Programming\TimePicker\TimePicker.dll</HintPath>

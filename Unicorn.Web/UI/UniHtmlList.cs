@@ -103,6 +103,17 @@ namespace Unicorn.Web.UI
 
         public ControlCollection Items { get { return Controls; } }
 
+        public int Count
+        {
+            get
+            {
+                if (HyperLink != null)
+                    return Controls.Count - 1;
+                else
+                    return Controls.Count;
+            }
+        }
+
         private string iconCssClass;
         string text;
         public string Text

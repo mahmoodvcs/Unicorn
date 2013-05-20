@@ -7,6 +7,7 @@ using System.Web;
 using System.Data;
 using System.Web.UI;
 using System.Data.Common;
+using System.Linq;
 
 namespace Unicorn.Data
 {
@@ -27,6 +28,7 @@ namespace Unicorn.Data
             get { return keys; }
             set { keys = value; }
         }
+        public string[] FieldNames { get { return fields.Keys.ToArray(); } }
         //DbTransaction transaction;
         //public DbTransaction Transaction
         //{
@@ -72,10 +74,6 @@ namespace Unicorn.Data
             }
         }
 
-        static Record()
-        {
-        }
-
         public Record()
         {
             fields = new Dictionary<string, object>();
@@ -115,11 +113,6 @@ namespace Unicorn.Data
 
         public Record Update()
         {
-            return Update(null);
-        }
-
-        public Record Update(Page pg /*bool isIdentityInsertOn*/)
-        {
             if (keys.Count == 0)
                 throw new InvalidOperationException("No primary key has been specified for Update statement of table'" + tableName + "'");
             DbParameter[] fieldParameters = GetParameters(fields);
@@ -145,11 +138,6 @@ namespace Unicorn.Data
         }
 
         public Record Delete()
-        {
-            return Delete(null);
-        }
-
-        public Record Delete(Page pg)
         {
             string deleteCommand = String.Format("DELETE {0} WHERE {1}", tableName,
                 string.Join(" AND ", GetFieldsAndParamsPair(keys)));

@@ -9,6 +9,7 @@ using System.Web.Security;
 using Unicorn.Web.Security.Authorization;
 using System.Web;
 using System.Linq;
+using Unicorn.Data;
 
 namespace Unicorn.Web
 {
@@ -41,8 +42,11 @@ namespace Unicorn.Web
             return split.ToArray();
         }
 
-        public static void BuildSiteMapMenu(object menu)
+        static Func<string, string> localizer = null;
+        public static void BuildSiteMapMenu(object menu, Func<string,string> localizer=null)
         {
+            if (localizer != null)
+                Utility.localizer = localizer;
             Type type = menu.GetType();
             PropertyInfo itemsProperty = type.GetProperty("Items", BindingFlags.Instance | BindingFlags.Public);
             object items = itemsProperty.GetValue(menu, null);
@@ -83,7 +87,13 @@ namespace Unicorn.Web
                 object childItems = childItemsProp.GetValue(menuItem, null);
                 var childAddMethod = childItemsProp.PropertyType.GetMethod("Add", BindingFlags.Public | BindingFlags.Instance);
                 BuildSiteMapMenu(menu, childItems, childAddMethod, itemType, node.ChildNodes, action, roles, hasAccess);
-                if (hasAccess || (int)childItemsProp.PropertyType.GetProperty("Count").GetValue(childItems, null) > 0)
+                var countProp = itemType.GetProperty("Count");
+                int childCount = 0;
+                if (countProp != null)
+                    childCount = (int)countProp.GetValue(menuItem, null);
+                else
+                    childCount = (int)childItemsProp.PropertyType.GetProperty("Count").GetValue(childItems, null);
+                if (hasAccess || childCount > 0)
                 {
                     if (addMethod.DeclaringType == items.GetType())
                         addMethod.Invoke(items, new object[] { menuItem });
@@ -178,7 +188,7 @@ namespace Unicorn.Web
             object menuItem = co.Invoke(null);
             PropertyInfo textProp = itemType.GetProperty("Text");
             if (node.Attributes["title"] != null)
-                textProp.SetValue(menuItem, node.Attributes["title"].Value, null);
+                textProp.SetValue(menuItem, LocalizeText(node.Attributes["title"].Value), null);
             PropertyInfo urlProp = itemType.GetProperty("NavigateUrl");
             if (node.Attributes["url"] != null)
                 urlProp.SetValue(menuItem, WebUtility.GetFullAbsolutePath(node.Attributes["url"].Value), null);
@@ -198,6 +208,13 @@ namespace Unicorn.Web
 
             }
             return menuItem;
+        }
+
+        private static string LocalizeText(string p)
+        {
+            if (localizer == null)
+                return null;
+            return localizer(p);
         }
         public static bool HasAnyOf(this string[] array1, string[] array2)
         {
