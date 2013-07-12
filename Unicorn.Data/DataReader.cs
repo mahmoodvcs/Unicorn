@@ -190,7 +190,13 @@ namespace Unicorn.Data
 
         public object this[string name]
         {
-            get { return dr[name]; }
+            get
+            {
+                var o = dr[name];
+                if (o is DBNull)
+                    return null;
+                return o;
+            }
         }
 
         public object this[int i]

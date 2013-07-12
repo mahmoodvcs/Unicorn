@@ -9,5 +9,6 @@ namespace Unicorn.Web.Security
     {
         public string RoleName { get; set; }
         public string RoleTitle { get; set; }
+        public string Options{ get; set; }
     }
 }

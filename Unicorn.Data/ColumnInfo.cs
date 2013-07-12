@@ -7,7 +7,7 @@ using System.Linq;
 namespace Unicorn.Data
 {
     [Serializable]
-    public class ColumnInfo
+    public class ColumnInfo: ICloneable
     {
         private string columnName;
         private string title;
@@ -365,6 +365,15 @@ namespace Unicorn.Data
             }
         }
 
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
+
+        #endregion
     }
 
     [Serializable]

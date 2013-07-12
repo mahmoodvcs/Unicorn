@@ -37,6 +37,31 @@ namespace Unicorn.Web.Security
             dr.Close();
             return string.IsNullOrEmpty(s) ? roleName : s;
         }
+        public static string GetRoleOptions(string roleName)
+        {
+            var dr = SqlHelper.ExecuteReader("select * from aspnet_Roles where LoweredRoleName=@r", SqlHelper.CreateParameter("@r", roleName));
+            bool b = dr.Read();
+            if (!b)
+            {
+                dr.Close();
+                return "";
+            }
+
+            int i;
+            try
+            {
+                i = dr.GetOrdinal("Options");
+            }
+            catch (IndexOutOfRangeException)
+            {
+                dr.Close();
+                AddOptionsColumn();
+                return roleName;
+            }
+            string s = dr.GetString2(i);
+            dr.Close();
+            return string.IsNullOrEmpty(s) ? roleName : s;
+        }
         private static void AddTitleColumn()
         {
             try
@@ -48,6 +73,17 @@ namespace Unicorn.Web.Security
                 throw new Exception("Column 'Title' does not exit in table 'aspnet_Roles' and cannot be created.", ex);
             }
         }
+        private static void AddOptionsColumn()
+        {
+            try
+            {
+                SqlHelper.ExecuteNonQuery("alter table aspnet_Roles add Options nvarchar(MAX) NULL");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Column 'Options' does not exit in table 'aspnet_Roles' and cannot be created.", ex);
+            }
+        }
 
         public static void SetRoleTitle(string roleName, string title)
         {
@@ -55,7 +91,7 @@ namespace Unicorn.Web.Security
             {
                 SqlHelper.ExecuteNonQuery("update aspnet_Roles set Title=@t where LoweredRoleName=@r",
                     SqlHelper.CreateParameter("@t", title),
-                    SqlHelper.CreateParameter("@r", roleName));
+                    SqlHelper.CreateParameter("@r", roleName.ToLower()));
             }
             catch (SqlException ex)
             {
@@ -68,19 +104,47 @@ namespace Unicorn.Web.Security
                     throw ex;
             }
         }
+        public static void SetRoleOptions(string roleName, string options)
+        {
+            try
+            {
+                if (options == null)
+                    SqlHelper.ExecuteNonQuery("update aspnet_Roles set Options=NULL where LoweredRoleName=@r",
+                        SqlHelper.CreateParameter("@r", roleName.ToLower()));
+                else
+                    SqlHelper.ExecuteNonQuery("update aspnet_Roles set Options=@t where LoweredRoleName=@r",
+                        SqlHelper.CreateParameter("@t", options),
+                        SqlHelper.CreateParameter("@r", roleName.ToLower()));
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Message.IndexOf("Invalid column name 'Options'") >= 0)
+                {
+                    AddOptionsColumn();
+                    SetRoleOptions(roleName, options);
+                }
+                else
+                    throw ex;
+            }
+        }
         public static UniRole[] GetAllRoles()
         {
             List<UniRole> roles = new List<UniRole>();
             DataReader dr = null;
             try
             {
-                dr = SqlHelper.ExecuteReader("select RoleName, title from aspnet_Roles");
+                dr = SqlHelper.ExecuteReader("select RoleName, Title, Options from aspnet_Roles");
                 NameValueCollection col = new NameValueCollection();
                 while (dr.Read())
                 {
                     string title = dr.GetString2(1);
                     string name = (string)dr[0];
-                    roles.Add(new UniRole() { RoleName = name, RoleTitle = title == "" ? name : title });
+                    roles.Add(new UniRole()
+                    {
+                        RoleName = name,
+                        RoleTitle = title == "" ? name : title,
+                        Options = (string)(dr[2] == DBNull.Value ? null : dr[2])
+                    });
                 }
                 return roles.ToArray();
             }
@@ -89,6 +153,11 @@ namespace Unicorn.Web.Security
                 if (ex.Message.IndexOf("Invalid column name 'Title'") >= 0)
                 {
                     AddTitleColumn();
+                    return GetAllRoles();
+                }
+                else if (ex.Message.IndexOf("Invalid column name 'Options'") >= 0)
+                {
+                    AddOptionsColumn();
                     return GetAllRoles();
                 }
                 else
@@ -100,10 +169,11 @@ namespace Unicorn.Web.Security
                     dr.Close();
             }
         }
-        public static void CreateRole(string roleName, string title)
+        public static void CreateRole(string roleName, string title, string options = null)
         {
             Roles.CreateRole(roleName);
             SetRoleTitle(roleName, title);
+            SetRoleOptions(roleName, options);
         }
 
     }

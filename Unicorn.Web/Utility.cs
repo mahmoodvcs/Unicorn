@@ -43,7 +43,7 @@ namespace Unicorn.Web
         }
 
         static Func<string, string> localizer = null;
-        public static void BuildSiteMapMenu(object menu, Func<string,string> localizer=null)
+        public static void BuildSiteMapMenu(object menu, Func<string, string> localizer = null)
         {
             if (localizer != null)
                 Utility.localizer = localizer;
@@ -69,7 +69,7 @@ namespace Unicorn.Web
             {
                 if (node.NodeType == XmlNodeType.Comment)
                     continue;
-                string action = GetNodeAttValue(node, "action");
+                string action = GetNodeAttrValue(node, "action");
                 bool shouldReturn = false;
                 //if user has access to parent node then he has access to this node and all child nodes. no need to check
                 // more and 'action' is not needed.
@@ -103,7 +103,7 @@ namespace Unicorn.Web
             }
         }
 
-        private static string GetNodeAttValue(XmlNode node, string attributeName)
+        private static string GetNodeAttrValue(XmlNode node, string attributeName)
         {
             if (node.Attributes[attributeName] == null)
                 return null;
@@ -193,7 +193,7 @@ namespace Unicorn.Web
             if (node.Attributes["url"] != null)
                 urlProp.SetValue(menuItem, WebUtility.GetFullAbsolutePath(node.Attributes["url"].Value), null);
             PropertyInfo tooltipProp = itemType.GetProperty("ToolTip");
-            if (node.Attributes["description"] != null)
+            if (node.Attributes["description"] != null && tooltipProp != null)
                 tooltipProp.SetValue(menuItem, node.Attributes["description"].Value, null);
             PropertyInfo info5 = itemType.GetProperty("ImageUrl");
             if ((node.Attributes["imageurl"] != null) && (info5 != null))
@@ -206,6 +206,13 @@ namespace Unicorn.Web
             {
                 propValue.SetValue(menuItem, node.Attributes["action"].Value, null);
 
+            }
+            //Other attributes
+            foreach (XmlAttribute attr in node.Attributes)
+            {
+                PropertyInfo prop = itemType.GetProperty(attr.Name, BindingFlags.Public | BindingFlags.Instance);
+                if (prop != null)
+                    prop.SetValue(menuItem, attr.Value, null);
             }
             return menuItem;
         }
@@ -224,11 +231,6 @@ namespace Unicorn.Web
                     return true;
             }
             return false;
-        }
-
-        public static object GetRandomGUID()
-        {
-            return Guid.NewGuid().ToString().Replace("-", "_");
         }
     }
 

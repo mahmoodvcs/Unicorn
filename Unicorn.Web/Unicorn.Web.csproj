@@ -99,7 +99,6 @@
     <Compile Include="UI\AdminMenu.cs" />
     <Compile Include="UI\ChangePassword.cs" />
     <Compile Include="UI\CreateUserWizard.cs" />
-    <Compile Include="UI\UniDataForm.cs" />
     <Compile Include="UI\UniDataGrid.cs" />
     <Compile Include="UI\UniDataToolbar.cs" />
     <Compile Include="UI\UniDatePicker.cs" />
@@ -112,7 +111,6 @@
     <Compile Include="UI\ManageUsers.cs" />
     <Compile Include="UI\UniHtmlList.cs" />
     <Compile Include="UI\UniNumericBox.cs" />
-    <Compile Include="UI\UniSearchBox.cs" />
     <Compile Include="UI\UniTextBox.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="WebUtility.cs" />

@@ -4,6 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 
+#if NET2
+
+#else
 namespace Unicorn.Data
 {
     /// <summary> 
@@ -74,3 +77,4 @@ namespace Unicorn.Data
         }
     }
 }
+#endif

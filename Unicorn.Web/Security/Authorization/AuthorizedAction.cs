@@ -9,21 +9,28 @@ using Unicorn.Web;
 
 namespace Unicorn.Web.Security.Authorization
 {
-	public class AuthorizedAction
-	{
-		private AuthorizedAction()
-		{
+    public class AuthorizedAction : ICloneable
+    {
+        private AuthorizedAction()
+        {
             subActions = new ObservableCollection<AuthorizedAction>();
             subActions.ItemInserted += subActions_ItemInserted;
-		}
+            subActions.BeforeItemRemove += subActions_BeforeItemRemove;
+        }
+
+        void subActions_BeforeItemRemove(object sender, ListItemEventArgs<AuthorizedAction> e)
+        {
+            e.Item.ParentAction = null;
+        }
+
 
         void subActions_ItemInserted(object sender, ListItemEventArgs<AuthorizedAction> e)
         {
             e.Item.ParentAction = this;
         }
-		public AuthorizedAction(string name)
-			: this()
-		{
+        public AuthorizedAction(string name)
+            : this()
+        {
             int i = name.IndexOf('.');
             if (i > 0)
             {
@@ -39,44 +46,49 @@ namespace Unicorn.Web.Security.Authorization
             //{
             //    ac = ac.AddSubAction(ss[i]);
             //}
-		}
-		public AuthorizedAction(string name, string subAction)
-			: this(name)
-		{
-			SubActions.Add(new AuthorizedAction(subAction));
-		}
-		public AuthorizedAction(string name, params string[] subActions)
-			: this(name)
-		{
-			//AuthorizedAction aa = this;
-			//foreach (string action in subActionsHierarchy)
-			//{
-			//	AuthorizedAction a = new AuthorizedAction(action);
-			//	aa.Add(a);
-			//	aa = a;
-			//}
+        }
+        public AuthorizedAction(string name, string subAction)
+            : this(name)
+        {
+            SubActions.Add(new AuthorizedAction(subAction));
+        }
+        public AuthorizedAction(string name, params string[] subActions)
+            : this(name)
+        {
+            //AuthorizedAction aa = this;
+            //foreach (string action in subActionsHierarchy)
+            //{
+            //	AuthorizedAction a = new AuthorizedAction(action);
+            //	aa.Add(a);
+            //	aa = a;
+            //}
 
             foreach (string s in subActions)
-			{
-				AddSubAction(s);
-			}
-		}
-		//public AuthorizedAction(string name, params AuthorizedAction[] subActions)
-		//	: this(name)
-		//{
-		//	this.subActions = new List<AuthorizedAction>(subActions);
-		//}
+            {
+                AddSubAction(s);
+            }
+        }
+        //public AuthorizedAction(string name, params AuthorizedAction[] subActions)
+        //	: this(name)
+        //{
+        //	this.subActions = new List<AuthorizedAction>(subActions);
+        //}
 
-		private string name;
-		public string Name
-		{
-			get { return name; }
-			set { name = value; }
-		}
+        private string name;
+        public string Name
+        {
+            get { return name; }
+            set { name = value; }
+        }
         private string title;
         public string Title
         {
-            get { return title; }
+            get
+            {
+                if (string.IsNullOrEmpty(title))
+                    return name;
+                return title;
+            }
             set { title = value; }
         }
 
@@ -84,7 +96,7 @@ namespace Unicorn.Web.Security.Authorization
         {
             get
             {
-                if (ParentAction == null)
+                if (ParentAction == null || ParentAction == AuthorizationManager.Actions)
                     return name;
                 return ParentAction.FullName + "." + name;
             }
@@ -119,31 +131,51 @@ namespace Unicorn.Web.Security.Authorization
         /// </summary>
         /// <param name="name"></param>
         /// <returns></returns>
-		public AuthorizedAction this[string name]
-		{
-			get
-			{
-				foreach (AuthorizedAction a in SubActions)
-				{
-					if (a.name == name)
-						return a;
-				}
-				return null;
+        public AuthorizedAction this[string name]
+        {
+            get
+            {
+                int i;
+                if ((i = name.IndexOf('.')) > 0)
+                    return GetSubAction(name.Substring(0, i))[name.Substring(i + 1)];
+                return GetSubAction(name);
 			}
 		}
-		public bool ContainsAction(AuthorizedAction action)
-		{
-			AuthorizedAction ac = this[action.name];
+        private AuthorizedAction GetSubAction(string name)
+        {
+                foreach (AuthorizedAction a in SubActions)
+                {
+                    if (a.name == name)
+                        return a;
+                }
+                return null;
+        }
+        public bool ContainsAction(AuthorizedAction action)
+        {
+            AuthorizedAction ac = this[action.name];
             if (ac == null)
-				return false;
-			if (action.SubActions.Count == 0)
-				return true;
-			foreach (AuthorizedAction sub in action.SubActions)
-			{
-				if (ac.ContainsAction(sub))
-					return true;
-			}
-			return false;
-		}
-	}
+                return false;
+            if (action.SubActions.Count == 0)
+                return true;
+            foreach (AuthorizedAction sub in action.SubActions)
+            {
+                if (ac.ContainsAction(sub))
+                    return true;
+            }
+            return false;
+        }
+
+        #region ICloneable Members
+
+        public object Clone()
+        {
+            AuthorizedAction ac = new AuthorizedAction(name);
+            ac.title = title;
+            foreach (var sub in SubActions)
+                ac.SubActions.Add((AuthorizedAction)sub.Clone());
+            return ac;
+        }
+
+        #endregion
+    }
 }

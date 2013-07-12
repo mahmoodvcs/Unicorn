@@ -5,6 +5,8 @@ using System.Text;
 using System.Data.Common;
 using System.Data;
 
+#if !NET_2_1
+
 namespace Unicorn.Data
 {
     public static class DbDataReaderMethods
@@ -24,3 +26,4 @@ namespace Unicorn.Data
         }
     }
 }
+#endif

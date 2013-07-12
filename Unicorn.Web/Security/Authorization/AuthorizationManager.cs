@@ -251,21 +251,38 @@ namespace Unicorn.Web.Security.Authorization
         }
         public static void ClearUserActions(string userName, string actionPrefix)
         {
-            string id = SqlHelper.ExecuteScaler("SELECT  UserId FROM dbo.aspnet_Users WHERE LoweredUserName = @user",
-                new SqlParameter("@user", userName.ToLower())).ToString().ToUpper();
+            var o = SqlHelper.ExecuteScaler("SELECT UserId FROM dbo.aspnet_Users WHERE LoweredUserName = @user",
+                new SqlParameter("@user", userName.ToLower()));
+            if (o == null || o == DBNull.Value)
+                return;
 
-            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where upper(UserRoleId)=@id and left(ActionName, @len) = @prefix"
+            string id = o.ToString();
+            string where = GetActionPrefixCondition(actionPrefix);
+            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where upper(UserRoleId)=@id and " + where
                 , new SqlParameter("@id", id)
                 , new SqlParameter("@len", actionPrefix.Length)
                 , new SqlParameter("@prefix", actionPrefix));
             AuthorizationManager.UserAuthorizationChanged(userName);
         }
+        static string GetActionPrefixCondition(string actionPrefix)
+        {
+            string where;
+            if (actionPrefix.EndsWith("."))
+                where = "left(ActionName, @len) = @prefix";
+            else
+                where = "(left(ActionName, @len+1) = (@prefix+'.') or ActionName = @prefix)";
+            return where;
+        }
         public static void ClearRoleActions(string roleName, string actionPrefix)
         {
-            string id = SqlHelper.ExecuteScaler("SELECT  RoleId FROM dbo.aspnet_Roles WHERE LoweredRoleName = @role",
-                new SqlParameter("@role", roleName.ToLower())).ToString();
-
-            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where UserRoleId=@id and left(ActionName, @len) = @prefix"
+            var o = SqlHelper.ExecuteScaler("SELECT RoleId FROM dbo.aspnet_Roles WHERE LoweredRoleName = @role",
+                new SqlParameter("@role", roleName.ToLower()));
+            if (o == null || o == DBNull.Value)
+                return;
+            string id = o.ToString();
+            
+            string where = GetActionPrefixCondition(actionPrefix);
+            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where UserRoleId=@id and " + where
                 , new SqlParameter("@id", id)
                 , new SqlParameter("@len", actionPrefix.Length)
                 , new SqlParameter("@prefix", actionPrefix));
@@ -299,18 +316,36 @@ namespace Unicorn.Web.Security.Authorization
             }
         }
 
-        public static void AddActionsFromSiteMap()
+        public static AuthorizedAction GetLocalizedAction(Func<string, string> localizer)
         {
-            actions.SubActions.Clear();
-            HttpContext context = HttpContext.Current;
-            XmlDocument doc = new XmlDocument();
-            //Page p = (Page)type.GetProperty("Page").GetValue(menu, null);
-            doc.Load(HttpContext.Current.Server.MapPath("~/Web.sitemap"));
+            var actions = (AuthorizedAction)AuthorizationManager.actions.Clone();
+            LocalizeAction(actions, localizer);
+            return actions;
+        }
+
+        public static void LocalizeAction(AuthorizedAction action, Func<string, string> localizer)
+        {
+            if (!string.IsNullOrEmpty(action.Title))
+                action.Title = localizer(action.Title);
+            foreach (var ac in action.SubActions)
+                LocalizeAction(ac, localizer);
+        }
+
+        public static void RegisterSiteMapActions()
+        {
             AuthorizedAction ac = new AuthorizedAction("Menu");
             ac.Title = "منو";
             actions.SubActions.Add(ac);
-            AddActionsFromSiteMap(doc.DocumentElement.FirstChild.ChildNodes, ac);
-
+            AddActionsFromSiteMap(ac);
+        }
+        public static void AddActionsFromSiteMap(AuthorizedAction actions)
+        {
+            actions.SubActions.Clear();
+            //HttpContext context = HttpContext.Current;
+            XmlDocument doc = new XmlDocument();
+            //Page p = (Page)type.GetProperty("Page").GetValue(menu, null);
+            doc.Load(HttpContext.Current.Server.MapPath("~/Web.sitemap"));
+            AddActionsFromSiteMap(doc.DocumentElement.FirstChild.ChildNodes, actions);
         }
         private static void AddActionsFromSiteMap(XmlNodeList nodes, AuthorizedAction actions)
         {
@@ -340,6 +375,10 @@ namespace Unicorn.Web.Security.Authorization
                 if (node.HasChildNodes)
                     AddActionsFromSiteMap(node.ChildNodes, ac);
             }
+        }
+        public static void ClearRegisteredActions()
+        {
+            actions.SubActions.Clear();
         }
     }
 }
