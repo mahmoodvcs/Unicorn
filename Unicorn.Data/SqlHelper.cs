@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
 using System.Data.Common;
@@ -32,7 +33,14 @@ namespace Unicorn.Data
             cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter sqp in parameters)
                 cmd.Parameters.Add(sqp);
-            res = cmd.ExecuteScalar();
+            try
+            {
+                res = cmd.ExecuteScalar();
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, command, parameters.Cast<SqlParameter>().ToArray());
+            }
             ConnectionManager.Instance.ReleaseConnection();
             if (res == DBNull.Value)
                 res = null;
@@ -45,13 +53,20 @@ namespace Unicorn.Data
         }
         public static DataReader ExecuteReader(string command, CommandBehavior behavior, params DbParameter[] parameters)
         {
-            DataReader dr;
+            DataReader dr = null;
             DbCommand cmd = CreateCommand();
             cmd.CommandText = command;
             cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter p in parameters)
                 cmd.Parameters.Add(p);
-            dr = new DataReader(cmd.ExecuteReader());
+            try
+            {
+                dr = new DataReader(cmd.ExecuteReader());
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, command, parameters.Cast<SqlParameter>().ToArray());
+            }
             return dr;
         }
 
@@ -65,8 +80,18 @@ namespace Unicorn.Data
             cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter p in parameters)
                 cmd.Parameters.Add(p);
-            n = cmd.ExecuteNonQuery();
-            ConnectionManager.Instance.ReleaseConnection();
+            try
+            {
+                n = cmd.ExecuteNonQuery();
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, command, parameters.Cast<SqlParameter>().ToArray());
+            }
+            finally
+            {
+                ConnectionManager.Instance.ReleaseConnection();
+            }
             //tr.Commit();
             //}
             return n;
@@ -83,8 +108,18 @@ namespace Unicorn.Data
                 cmd.Parameters.Add(param);
             DbDataAdapter da = ConnectionManager.DbProviderFactory.CreateDataAdapter();
             da.SelectCommand = cmd;
-            da.Fill(dt);
-            ConnectionManager.Instance.ReleaseConnection();
+            try
+            {
+                da.Fill(dt);
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, command, parameters.Cast<SqlParameter>().ToArray());
+            }
+            finally
+            {
+                ConnectionManager.Instance.ReleaseConnection();
+            }
             return dt;
         }
 
@@ -99,8 +134,18 @@ namespace Unicorn.Data
             {
                 cmd.Parameters.Add(param);
             }
-            cmd.ExecuteNonQuery();
-            ConnectionManager.Instance.ReleaseConnection();
+            try
+            {
+                cmd.ExecuteNonQuery();
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, procName, parameters.Cast<SqlParameter>().ToArray());
+            }
+            finally
+            {
+                ConnectionManager.Instance.ReleaseConnection();
+            }
             return res;
         }
 
@@ -116,8 +161,18 @@ namespace Unicorn.Data
             {
                 cmd.Parameters.Add(param);
             }
-            val = cmd.ExecuteScalar();
-            ConnectionManager.Instance.ReleaseConnection();
+            try
+            {
+                val = cmd.ExecuteScalar();
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, procName, parameters.Cast<SqlParameter>().ToArray());
+            }
+            finally
+            {
+                ConnectionManager.Instance.ReleaseConnection();
+            }
             //res = val == null ? "0" : val.ToString();
             return val;
         }
@@ -139,11 +194,21 @@ namespace Unicorn.Data
             DbDataAdapter da = ConnectionManager.DbProviderFactory.CreateDataAdapter();
             da.SelectCommand = cmd;
             DataTable dt = new DataTable();
-            if (startIndex >= 0 && recCount > 0)
-                da.Fill(startIndex, recCount, dt);
-            else
-                da.Fill(dt);
-            ConnectionManager.Instance.ReleaseConnection();
+            try
+            {
+                if (startIndex >= 0 && recCount > 0)
+                    da.Fill(startIndex, recCount, dt);
+                else
+                    da.Fill(dt);
+            }
+            catch (SqlException ex)
+            {
+                throw new UniSqlException(ex, procName, parameters.Cast<SqlParameter>().ToArray());
+            }
+            finally
+            {
+                ConnectionManager.Instance.ReleaseConnection();
+            }
             return dt;
         }
 
