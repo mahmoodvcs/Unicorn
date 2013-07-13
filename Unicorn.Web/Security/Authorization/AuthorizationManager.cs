@@ -11,14 +11,17 @@ using System.Xml;
 using System.Web.Caching;
 using Unicorn.Data;
 using System.IO;
+using Common.Logging;
 
 namespace Unicorn.Web.Security.Authorization
 {
     public static class AuthorizationManager
     {
+        static ILog log;
         static AuthorizationManager()
         {
             actions = new AuthorizedAction("root");
+            log = LogManager.GetCurrentClassLogger();
         }
         private static AuthorizedAction actions;
         public static AuthorizedAction Actions
@@ -155,12 +158,16 @@ namespace Unicorn.Web.Security.Authorization
                 {
                     list.AddRange(GetRoleActions(r));
                 }
+                log.Trace(m => m("Loading from database. user: '" + userName + "'. Actions:  " + string.Join(", ", list)));
                 userActions = list.ToArray();
                 HttpContext.Current.Cache.Add(cacheKey, userActions, null
                     , Cache.NoAbsoluteExpiration, new TimeSpan(2, 0, 0), CacheItemPriority.Normal, null);
             }
             else
+            {
                 userActions = (string[])HttpContext.Current.Cache[cacheKey];
+                log.Trace("Returning cahced. user: " + userName);
+            }
             return userActions;
         }
 
@@ -228,12 +235,14 @@ namespace Unicorn.Web.Security.Authorization
             cmd.Connection = con;
             if (isUser)
             {
+                log.Trace(m => m("User: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
                 cmd.CommandText = "aspnet_Authorization_AddActionForUser";
                 cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
                 UserAuthorizationChanged(HttpContext.Current, userOrRoleName);
             }
             else
             {
+                log.Trace(m => m("Role: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
                 cmd.CommandText = "aspnet_Authorization_AddActionForRole";
                 cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
                 RoleAuthorizationChanged(HttpContext.Current, userOrRoleName);
@@ -280,7 +289,7 @@ namespace Unicorn.Web.Security.Authorization
             if (o == null || o == DBNull.Value)
                 return;
             string id = o.ToString();
-            
+
             string where = GetActionPrefixCondition(actionPrefix);
             SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where UserRoleId=@id and " + where
                 , new SqlParameter("@id", id)
@@ -302,6 +311,7 @@ namespace Unicorn.Web.Security.Authorization
         public static void UserAuthorizationChanged(HttpContext context, string userName)
         {
             //string cacheKey = "AuthorizedAction_UserActions_" + userName;
+            log.Trace(m => m("User: '" + userName + "'"));
             context.Cache.Remove(GetCacheKey(userName));
         }
         public static void RoleAuthorizationChanged(string roleName)
@@ -310,6 +320,7 @@ namespace Unicorn.Web.Security.Authorization
         }
         public static void RoleAuthorizationChanged(HttpContext context, string roleName)
         {
+            log.Trace(m => m("Role: '" + roleName + "'"));
             foreach (string u in Roles.GetUsersInRole(roleName))
             {
                 UserAuthorizationChanged(context, u);

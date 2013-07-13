@@ -9,6 +9,7 @@ namespace Unicorn.Data
     public class UniSqlException : Exception
     {
         public UniSqlException(SqlException exception, string sqlCommand, params SqlParameter[] parameters)
+            : base(exception.Message + " SQL Command: {" + sqlCommand + "}.", exception)
         {
             SqlException = exception;
             SqlCommand = sqlCommand;

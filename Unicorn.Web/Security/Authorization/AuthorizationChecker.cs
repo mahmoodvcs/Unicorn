@@ -4,11 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using System.Web.Profile;
+using Common.Logging;
 
 namespace Unicorn.Web.Security.Authorization
 {
     public static class AuthorizationChecker
     {
+        static Common.Logging.ILog log;
+        static AuthorizationChecker()
+        {
+        }
         public static bool HasEntityAccess(string entityName, bool checkAnyAccessToSubActions = false)
         {
             var user = HttpContext.Current.User.Identity;
@@ -52,15 +57,25 @@ namespace Unicorn.Web.Security.Authorization
         }
         public static bool HasAccess(string userName, string action, bool checkAnyAccessToSubActions = false)
         {
-            if (string.IsNullOrEmpty(userName))
-                return false;
+            var ret = false;
+            string s = "";
+            if (!string.IsNullOrEmpty(userName))
+            {
             string[] allActions = AuthorizationManager.GetAllActionsForUser(userName);
             if (Array.IndexOf(allActions, action) >= 0)
-                return true;
-            if (allActions.Any(a => action.StartsWith(a + ".")))
-                return true;
-            return checkAnyAccessToSubActions && allActions.Any(a => a.StartsWith(action + "."));
-
+                    ret = true;
+                else if (allActions.Any(a => action.StartsWith(a + ".")))
+                    ret = true;
+                else
+                {
+                    ret = checkAnyAccessToSubActions && allActions.Any(a => a.StartsWith(action + "."));
+                    s = " - check through sub action";
+                }
+            }
+            if (log == null)
+                log = LogManager.GetCurrentClassLogger();
+            log.Trace(m => m("User '" + userName + "'. action: '" + action + "'. Access: " + ret.ToString() + s));
+            return ret;
         }
         public static bool HasAccess<EnumType>(EnumType action, bool checkAnyAccessToSubActions = false)
         {
