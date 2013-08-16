@@ -181,8 +181,8 @@ namespace Unicorn.Web.Security.Authorization
         }
         private static string[] GetActions(string userOrRoleName, bool isUser)
         {
-            if (!Configuration.ConfigInitializer.CheckConfig(new System.Web.UI.Control()))
-                return new string[0];
+            //if (!Configuration.ConfigInitializer.CheckConfig(new System.Web.UI.Control()))
+            //    return new string[0];
             SqlConnection con = GetConnection();
             SqlCommand cmd = new SqlCommand();
             cmd.Connection = con;

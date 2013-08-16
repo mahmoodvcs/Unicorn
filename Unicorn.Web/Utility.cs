@@ -73,7 +73,7 @@ namespace Unicorn.Web
                 bool shouldReturn = false;
                 //if user has access to parent node then he has access to this node and all child nodes. no need to check
                 // more and 'action' is not needed.
-                bool hasAccess = HasSiteMapNodeAccess(parentAction, roles, node, ref action, out shouldReturn);
+                bool hasAccess = HasSiteMapNodeAccess(parentAction, roles,HttpContext.Current.User, node, out action, out shouldReturn);
                 if (shouldReturn)
                     return;
                 object menuItem = CreateMenuIem(node, itemType);
@@ -110,12 +110,13 @@ namespace Unicorn.Web
             return node.Attributes[attributeName].Value;
         }
 
-        public static bool HasSiteMapNodeAccess(string parentAction, string[] userRoles,
-            XmlNode node, ref string action, out bool shouldReturn)
+        public static bool HasSiteMapNodeAccess(string parentAction, string[] userRoles, System.Security.Principal.IPrincipal user,
+            XmlNode node, out string action, out bool shouldReturn)
         {
             shouldReturn = false;
             //if (AuthorizationManager.GetAllActionsForUser("admin").Length == 0)
             //    return user.Identity.IsAuthenticated;
+            action = GetNodeAttrValue(node, "action");
             if (node.NodeType == XmlNodeType.Comment)
                 return true;
             XmlAttribute rolesAttrib = node.Attributes["roles"];
@@ -127,14 +128,15 @@ namespace Unicorn.Web
                 return false;
 
             bool hasAccess = false;
-            System.Security.Principal.IPrincipal user = HttpContext.Current.User;
+            bool actionHasBeenSet = false;
             if (usersAttrib == null && rolesAttrib == null && actionsAttrib == null && action == null)
             {
                 if (urlAttrib != null)
                 {
-                    action = parentAction + "." + urlAttrib.Value;
-                    if (AuthorizationChecker.HasAccess(action))
-                        hasAccess = true;
+                    action = parentAction + "." + GetUrlAction(urlAttrib.Value);
+                    actionHasBeenSet = true;
+                    if (AuthorizationChecker.HasAccess(user.Identity.Name, action))
+                        return true;
                 }
             }
             else if (!user.Identity.IsAuthenticated)
@@ -175,10 +177,10 @@ namespace Unicorn.Web
                 if (aaa.Authorize(HttpContext.Current))
                     hasAccess = true;
             }
-            if (action != null)
+            if (action != null && !actionHasBeenSet)
             {
                 action = parentAction + "." + action;
-                hasAccess = AuthorizationChecker.HasAccess(action);
+                hasAccess = AuthorizationChecker.HasAccess(user.Identity.Name, action);
             }
             return hasAccess;
         }
@@ -220,8 +222,16 @@ namespace Unicorn.Web
         private static string LocalizeText(string p)
         {
             if (localizer == null)
-                return null;
+                return p;
             return localizer(p);
+        }
+		internal static string GetUrlAction(string url)
+        {
+            url = url.ToLower();
+            if (url.EndsWith(".aspx"))
+                url = url.Remove(url.Length - 5);
+            url = url.Replace('.', '_');
+            return url;
         }
         public static bool HasAnyOf(this string[] array1, string[] array2)
         {

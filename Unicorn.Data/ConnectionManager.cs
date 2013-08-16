@@ -7,6 +7,7 @@ using System.Threading;
 using System.Data.SqlClient;
 using System.Web.Configuration;
 using System.Configuration;
+using System.Collections.Concurrent;
 
 namespace Unicorn.Data
 {
@@ -83,9 +84,9 @@ namespace Unicorn.Data
 
         private int connectionCounter = 0;
         private int transactionCounter = 0;
-        private static Dictionary<Thread, ConnectionManager> ManagerInstances = new Dictionary<Thread, ConnectionManager>();
+        private static ConcurrentDictionary<Thread, ConnectionManager> ManagerInstances = new ConcurrentDictionary<Thread, ConnectionManager>();
         protected DbConnection connection = null;
-        private static object mutex = new object();
+        //private static object mutex = new object();
         public DbTransaction Transaction
         {
             get;
@@ -100,7 +101,7 @@ namespace Unicorn.Data
         {
             get
             {
-                lock (mutex)
+                //lock (mutex)
                 {
                     ConnectionManager connectionManager = null;
                     if (ManagerInstances.ContainsKey(Thread.CurrentThread))
@@ -111,7 +112,7 @@ namespace Unicorn.Data
                     if (connectionManager == null)
                     {
                         connectionManager = new ConnectionManager();
-                        ManagerInstances.Add(Thread.CurrentThread, connectionManager);
+                        ManagerInstances[Thread.CurrentThread] = connectionManager;
                     }
 
                     return connectionManager;
@@ -129,7 +130,8 @@ namespace Unicorn.Data
         {
             connection.Close();
             connection = null;
-            ManagerInstances.Remove(Thread.CurrentThread);
+            ConnectionManager temp;
+            ManagerInstances.TryRemove(Thread.CurrentThread, out temp);
         }
 
         #endregion
