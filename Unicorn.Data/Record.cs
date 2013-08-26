@@ -230,7 +230,7 @@ namespace Unicorn.Data
             foreach (KeyValuePair<string, object> field in fields)
             {
                 fieldNames[i] = "[" + field.Key + "]";
-                if (field.Value == null || field.Value.ToString().Trim() == "")
+                if (field.Value == null)// || field.Value.ToString().Trim() == "")
                     fieldValues[i] = "null";
                 else
                     fieldValues[i] = "@" + field.Key;
@@ -254,7 +254,7 @@ namespace Unicorn.Data
         {
             List<DbParameter> pars = new List<DbParameter>();
             foreach (KeyValuePair<string, object> field in fieldValuePairs)
-                if (field.Value != null && field.Value.ToString().Trim() != "")
+                if (field.Value != null)// && field.Value.ToString().Trim() != "")
                     pars.Add(SqlHelper.CreateParameter("@" + parameterPrefix + field.Key, field.Value));
 
 
