@@ -13,16 +13,12 @@ namespace Unicorn
 
 		public static string ToShamsiString( PersianDateTime dt )
 		{
-			//dt = MiladiToShamsi( dt );
-			return dt.Year.ToString() + '/' + dt.Month.ToString() + '/' + dt.Day.ToString();
+			return dt.ToShortDateString();
 		}
 
 		public static string ToShamsiStringFull( PersianDateTime dt )
 		{
-			//dt = MiladiToShamsi( dt );
-			return dt.Year.ToString() + '/' + dt.Month.ToString() + '/' + dt.Day.ToString() +
-				"  " + dt.Hour.ToString() + ':' + dt.Minute.ToString() + ':' +
-				dt.Second.ToString();
+            return dt.ToShortDateTimeString();
 		}
 
 		public static string ToSQLPersianDateTimeString( PersianDateTime dt )
