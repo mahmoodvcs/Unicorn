@@ -3,3 +3,6 @@ Unicorn.Web/obj/
 Unicorn.Web/bin/Debug/*.xml
 Unicorn.Data/bin/
 Unicorn.Web/bin/
+bin/
+*.suo
+Unicorn.MVC/obj/

@@ -102,6 +102,16 @@ namespace Unicorn.Data
             string sel = "SELECT * FROM (SELECT *, ROW_NUMBER() OVER(ORDER BY {1}) AS _RowNumber FROM {0} WHERE 1=1 " + condition + " ) AS TableWithRowNumber WHERE _RowNumber > {2} AND _RowNumber <= {3}" + condition;
             return string.Format(sel, table.FullName, sortExpression, startIndex, startIndex + maximumRows);
         }
+        public static string GetPagedSelectStatement(string tableName, string fieldList, string sortExpression
+            , string whereClause, int startIndex, int maximumRows)
+        {
+            string inner = string.Format("SELECT {0}, ROW_NUMBER() OVER(ORDER BY {1}) AS _RowNumber FROM {2}"
+                , fieldList, sortExpression, tableName);
+            if (!string.IsNullOrEmpty(whereClause))
+                inner += " where " + whereClause;
+            string sel = "SELECT * FROM ( {0} ) AS TableWithRowNumber WHERE _RowNumber > {1} AND _RowNumber <= {2}";
+            return string.Format(sel, inner, startIndex, startIndex + maximumRows);
+        }
         public static int GetRowIndex(TableInfo table, string sortExpression, string keyFieldName, object keyFieldValue)
         {
             string sel = "SELECT ROW_NUMBER() OVER(ORDER BY {1}) AS _RowNumber FROM {0} WHERE {2} = {3}";

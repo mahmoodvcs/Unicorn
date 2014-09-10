@@ -30,7 +30,6 @@ namespace Unicorn.Data
             object res = null;
             DbCommand cmd = CreateCommand();
             cmd.CommandText = command;
-            cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter sqp in parameters)
                 cmd.Parameters.Add(sqp);
             try
@@ -56,7 +55,6 @@ namespace Unicorn.Data
             DataReader dr = null;
             DbCommand cmd = CreateCommand();
             cmd.CommandText = command;
-            cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter p in parameters)
                 cmd.Parameters.Add(p);
             try
@@ -77,7 +75,6 @@ namespace Unicorn.Data
             //{
             DbCommand cmd = CreateCommand();
             cmd.CommandText = command;
-            cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter p in parameters)
                 cmd.Parameters.Add(p);
             try
@@ -103,7 +100,6 @@ namespace Unicorn.Data
             DbCommand cmd = CreateCommand();
             cmd.CommandText = command;
             //cmd.Connection = con;
-            cmd.CommandTimeout = CommandTimeOut;
             foreach (DbParameter param in parameters)
                 cmd.Parameters.Add(param);
             DbDataAdapter da = ConnectionManager.DbProviderFactory.CreateDataAdapter();
@@ -127,7 +123,6 @@ namespace Unicorn.Data
         {
             bool res = true;
             DbCommand cmd = CreateCommand();
-            cmd.CommandTimeout = CommandTimeOut;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = procName;
             foreach (DbParameter param in parameters)
@@ -154,7 +149,6 @@ namespace Unicorn.Data
             //string res = "0";
             object val;
             DbCommand cmd = CreateCommand();
-            cmd.CommandTimeout = CommandTimeOut;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = procName;
             foreach (DbParameter param in parameters)
@@ -184,7 +178,6 @@ namespace Unicorn.Data
         public static DataTable ExecuteProcedure(string procName, int startIndex, int recCount, params DbParameter[] parameters)
         {
             DbCommand cmd = CreateCommand();
-            cmd.CommandTimeout = CommandTimeOut;
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.CommandText = procName;
             foreach (DbParameter param in parameters)
@@ -218,6 +211,9 @@ namespace Unicorn.Data
             var con = ConnectionManager.Instance.GetConnection();
             var cmd = con.CreateCommand();
             cmd.Transaction = ConnectionManager.Instance.Transaction;
+            if (ConnectionManager.DatabaseType != DatabaseType.SqlEC)
+                cmd.CommandTimeout = CommandTimeOut;
+
             return cmd;
         }
         private static DbCommand CreateCommand(string command)

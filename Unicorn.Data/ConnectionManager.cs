@@ -22,7 +22,9 @@ namespace Unicorn.Data
         static ConnectionManager()
         {
             if (WebConfigurationManager.ConnectionStrings.Count == 0)
-                throw new Exception("No ConnectionString is found in Web.Config file.");
+            {
+                //throw new Exception("No ConnectionString is found in Web.Config file.");
+            }
             else if (WebConfigurationManager.ConnectionStrings.Count == 1)
                 ConnectionStringName = WebConfigurationManager.ConnectionStrings[0].Name;
             else
@@ -30,6 +32,14 @@ namespace Unicorn.Data
         }
 
         #endregion
+
+        Type connectionType;
+
+        public void Init<T>() where T : DbConnection
+        {
+            connectionType = typeof(T);
+            connectionConstructor = connectionType.GetConstructor(new Type[] { typeof(string) });
+        }
 
         private static DbProviderFactory dbProviderFactory;
         public static DbProviderFactory DbProviderFactory
@@ -54,6 +64,23 @@ namespace Unicorn.Data
         public static DatabaseType DatabaseType
         {
             get { return databaseType; }
+            set
+            {
+                databaseType = value;
+                switch (databaseType)
+                {
+                    case Data.DatabaseType.SqlEC:
+                        providerName = "System.Data.SqlServerCe.4.0";
+                        break;
+                    case Data.DatabaseType.SQLServer:
+                        providerName = "System.Data.SqlClient";
+                        break;
+                    case Data.DatabaseType.SQLite:
+                        providerName = "System.Data.SQLite";
+                        break;
+                }
+                dbProviderFactory = DbProviderFactories.GetFactory(providerName);
+            }
         }
         static string connectionStringName = "";
         public static string ConnectionStringName
@@ -62,7 +89,9 @@ namespace Unicorn.Data
             set
             {
                 connectionStringName = value;
-                ConnectionStringSettings cn = ConfigurationManager.ConnectionStrings[connectionStringName];
+                ConnectionStringSettings cn = WebConfigurationManager.ConnectionStrings[connectionStringName];
+                if (cn == null)
+                    throw new Exception("Connection string does not exist.");
                 connectionString = cn.ConnectionString;
                 providerName = cn.ProviderName;
                 dbProviderFactory = DbProviderFactories.GetFactory(cn.ProviderName);
@@ -75,6 +104,9 @@ namespace Unicorn.Data
                     case "System.Data.SQLite":
                         databaseType = DatabaseType.SQLite;
                         break;
+                    case "System.Data.SqlServerCe.4.0":
+                        databaseType = Data.DatabaseType.SqlEC;
+                        break;
                 }
             }
         }
@@ -86,6 +118,7 @@ namespace Unicorn.Data
         private int transactionCounter = 0;
         private static ConcurrentDictionary<Thread, ConnectionManager> ManagerInstances = new ConcurrentDictionary<Thread, ConnectionManager>();
         protected DbConnection connection = null;
+        private static System.Reflection.ConstructorInfo connectionConstructor;
         //private static object mutex = new object();
         public DbTransaction Transaction
         {
@@ -140,19 +173,30 @@ namespace Unicorn.Data
 
         protected void CreateConnection()
         {
-            switch (databaseType)
+            if (dbProviderFactory != null)
             {
-                case DatabaseType.SQLServer:
-                    connection = new SqlConnection(ConnectionString);
-                    break;
-                case DatabaseType.SQLite:
-                    throw new NotImplementedException();
-                //    con = new SQLiteConnection(UserConnectionString);
-                //break;
+                connection = dbProviderFactory.CreateConnection();
+                connection.ConnectionString = connectionString;
+            }
+            else if (connectionConstructor != null)
+            {
+                connection = (DbConnection)connectionConstructor.Invoke(new object[] { ConnectionString });
+            }
+            else
+            {
+                switch (databaseType)
+                {
+                    case DatabaseType.SQLServer:
+                        connection = new SqlConnection(ConnectionString);
+                        break;
+                    case DatabaseType.SQLite:
+                        throw new NotImplementedException();
+                    //    con = new SQLiteConnection(UserConnectionString);
+                    //break;
+                }
             }
             connection.Open();
         }
-
 
         #endregion
 

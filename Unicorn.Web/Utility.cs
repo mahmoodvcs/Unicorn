@@ -193,7 +193,12 @@ namespace Unicorn.Web
                 textProp.SetValue(menuItem, LocalizeText(node.Attributes["title"].Value), null);
             PropertyInfo urlProp = itemType.GetProperty("NavigateUrl");
             if (node.Attributes["url"] != null)
-                urlProp.SetValue(menuItem, WebUtility.GetFullAbsolutePath(node.Attributes["url"].Value), null);
+            {
+                var url = node.Attributes["url"].Value;
+                if (!url.ToLower().StartsWith("javascript:"))
+                    url = WebUtility.GetFullAbsolutePath(url);
+                urlProp.SetValue(menuItem, url, null);
+            }
             PropertyInfo tooltipProp = itemType.GetProperty("ToolTip");
             if (node.Attributes["description"] != null && tooltipProp != null)
                 tooltipProp.SetValue(menuItem, node.Attributes["description"].Value, null);

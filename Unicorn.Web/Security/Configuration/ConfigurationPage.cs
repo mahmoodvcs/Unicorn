@@ -272,6 +272,7 @@ namespace Unicorn.Web.Security.Pages
                 lbl.Text = "نقش کاربري Admin با موفقيت ايجاد شد.";
             }
             Roles.AddUserToRole(uxCreateUser.UserName, "Admin");
+            Authorization.AuthorizationManager.AddActionForRole("Admin", "Menu");
             MultiView1.ActiveViewIndex = 2;
         }
         private void Exit()

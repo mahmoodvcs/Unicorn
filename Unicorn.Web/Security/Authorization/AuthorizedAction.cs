@@ -165,17 +165,17 @@ namespace Unicorn.Web.Security.Authorization
             return false;
         }
 
-        #region ICloneable Members
-
         public object Clone()
         {
+        //    return Clone(false);
+        //}
+        //public object Clone(bool filterUserAccess)
+        //{
             AuthorizedAction ac = new AuthorizedAction(name);
             ac.title = title;
             foreach (var sub in SubActions)
                 ac.SubActions.Add((AuthorizedAction)sub.Clone());
             return ac;
         }
-
-        #endregion
     }
 }

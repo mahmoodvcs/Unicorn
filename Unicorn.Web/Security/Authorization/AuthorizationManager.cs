@@ -22,7 +22,35 @@ namespace Unicorn.Web.Security.Authorization
         {
             actions = new AuthorizedAction("root");
             log = LogManager.GetCurrentClassLogger();
+
+            if (SqlHelper.ExecuteScaler(@"SELECT * FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = 'aspnet_users'") == DBNull.Value)
+            {
+                rolesTableName = "aspnet_roles";
+                usersTableName = "aspnet_users";
+                //userRolesTabeName = "aspnet_UsersInRoles";
+            }
+            else
+            {
+                rolesTableName = "roles";
+                usersTableName = "users";
+                //userRolesTabeName = "UsersInRoles";
+            }
+            userRoleActionsTableName = "aspnet_UserRoleActions";
+            if (SqlHelper.ExecuteScaler(@"SELECT * FROM INFORMATION_SCHEMA.TABLES 
+                 WHERE TABLE_SCHEMA = 'dbo' 
+                 AND  TABLE_NAME = '" + userRoleActionsTableName + "'") == null)
+            {
+                ExecuteScalar(@"CREATE TABLE [dbo].[aspnet_UserRoleActions](
+	[ActionName] [nvarchar](max) NOT NULL,
+	[UserRoleId] [uniqueidentifier] NOT NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+");
+            }
         }
+        static readonly string rolesTableName, usersTableName//, userRolesTabeName, 
+            , userRoleActionsTableName;
         private static AuthorizedAction actions;
         public static AuthorizedAction Actions
         {
@@ -31,64 +59,80 @@ namespace Unicorn.Web.Security.Authorization
         }
 
         #region RegisterAction
-        public static void RegisterAction(string action)
+        public static AuthorizedAction RegisterAction(string action)
         {
-            actions.AddSubAction(action);
+            return actions.AddSubAction(action);
         }
-        public static void RegisterAction(string action, params string[] subActions)
+        public static AuthorizedAction RegisterAction(string action, params string[] subActions)
         {
             AuthorizedAction ac = actions.AddSubAction(action);
             foreach (string s in subActions)
             {
                 ac.AddSubAction(s);
             }
+            return ac;
         }
-        public static void RegisterAction<EnumType>(string parentAction)
+        public static AuthorizedAction RegisterAction<EnumType>(string parentAction)
         {
-            RegisterAction(parentAction, typeof(EnumType));
+            return RegisterAction(parentAction, typeof(EnumType));
         }
-        public static void RegisterAction<EnumType>()
+        public static AuthorizedAction RegisterAction<EnumType>()
         {
-            RegisterAction(typeof(EnumType));
+            return RegisterAction(typeof(EnumType));
         }
-        public static void RegisterAction<EnumType>(AuthorizedAction parentAction)
+        public static AuthorizedAction RegisterAction<EnumType>(AuthorizedAction parentAction)
         {
-            RegisterAction(parentAction, typeof(EnumType));
+            return RegisterAction(parentAction, typeof(EnumType));
         }
-        public static void RegisterAction(Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(Type actionsEnumType)
         {
             AuthorizedAction ac = new AuthorizedAction(actionsEnumType.Name);
             ac.Title = GetTitle(actionsEnumType, actionsEnumType.Name, actionsEnumType);
             actions.SubActions.Add(ac);
             RegisterAction(ac, actionsEnumType);
+            return ac;
         }
-        public static void RegisterAction(string parentAction, Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(string parentAction, Type actionsEnumType)
         {
             var ac = actions[parentAction];
             if (ac == null)
                 ac = actions.AddSubAction(parentAction);
             RegisterAction(ac, actionsEnumType);
+            return ac;
         }
-        public static void RegisterAction(AuthorizedAction parentAction, Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(AuthorizedAction parentAction, Type actionsEnumType)
         {
             if (!actionsEnumType.IsEnum)
                 throw new ArgumentException("پارامتر بايد از نوع شمارشي باشد.", "actionsEnumType");
+            AuthorizedAction enumAction = new AuthorizedAction(actionsEnumType.Name);
+            enumAction.Title = GetTitle(actionsEnumType, enumAction.Name);
+            parentAction.SubActions.Add(enumAction);
             FieldInfo[] fields = actionsEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
             foreach (FieldInfo fi in fields)
             {
-                AuthorizedAction ac = parentAction.AddSubAction(fi.Name);
-                ac.Title = GetTitle(fi, fi.Name, actionsEnumType);
+                if (fi.Name.Contains("_"))
+                {
+                    var acs = fi.Name.Split('_');
+                    string title = GetTitle(fi, fi.Name);
+                    var tis = title.Split('.');
+                    var ac = enumAction;
+                    for (int i = 0; i < acs.Length; i++)
+                    {
+                        ac = ac.AddSubAction(acs[i]);
+                        ac.Title = tis[i];
+                    }
+                }
+                else
+                {
+                    AuthorizedAction ac = enumAction.AddSubAction(fi.Name);
+                    ac.Title = GetTitle(fi, fi.Name);
+                }
             }
+            return enumAction;
         }
-        static string GetTitle(ICustomAttributeProvider p, string name = null, Type containingType = null)
+        static string GetTitle(ICustomAttributeProvider typeMember, string name = null, Type containingType = null)
         {
-            object[] attrs = p.GetCustomAttributes(typeof(TitleAttribute), false);
-            string title = null;
-            if (attrs.Length > 0)
-                title = ((TitleAttribute)attrs[0]).Title;
-            else
-                title = name;
-            return title;
+            return TitleAttribute.GetTitle(typeMember, name, containingType);
         }
         //public static void RegisterAction(string parentAction, Type actionsEnumType)
         //{
@@ -116,6 +160,26 @@ namespace Unicorn.Web.Security.Authorization
             cmd.ExecuteNonQuery();
             con.Close();
         }
+        private static SqlDataReader ExecuteReader(string command, params SqlParameter[] parameters)
+        {
+            SqlConnection con = GetConnection();
+            SqlCommand cmd = new SqlCommand(command, con);
+            foreach (SqlParameter p in parameters)
+                cmd.Parameters.Add(p);
+            con.Open();
+            return cmd.ExecuteReader(CommandBehavior.CloseConnection);
+        }
+        private static object ExecuteScalar(string command, params SqlParameter[] parameters)
+        {
+            SqlConnection con = GetConnection();
+            SqlCommand cmd = new SqlCommand(command, con);
+            foreach (SqlParameter p in parameters)
+                cmd.Parameters.Add(p);
+            con.Open();
+            var v = cmd.ExecuteScalar();
+            con.Close();
+            return v;
+        }
 
         //public static bool Authorize(HttpContext httpContext, string userName)
         //{
@@ -141,7 +205,7 @@ namespace Unicorn.Web.Security.Authorization
 
         private static string GetCacheKey(string userName)
         {
-            string cacheKey = "JcoAuthorization_UserActions_" + userName.ToLower();
+            string cacheKey = "UnicornAuthorization_UserActions_" + userName.ToLower();
             return cacheKey;
         }
         public static string[] GetAllActionsForUser(string userName)
@@ -181,24 +245,24 @@ namespace Unicorn.Web.Security.Authorization
         }
         private static string[] GetActions(string userOrRoleName, bool isUser)
         {
-            //if (!Configuration.ConfigInitializer.CheckConfig(new System.Web.UI.Control()))
-            //    return new string[0];
-            SqlConnection con = GetConnection();
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = con;
-            if (isUser)
-            {
-                cmd.CommandText = "aspnet_Authorization_GetUserActions";
-                cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
-            }
-            else
-            {
-                cmd.CommandText = "aspnet_Authorization_GetRoleActions";
-                cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
-            }
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            con.Open();
-            SqlDataReader dr = cmd.ExecuteReader();
+            string userRoleId = GetUserRoleId(userOrRoleName, isUser);
+            var dr = ExecuteReader(string.Format("select ActionName from {0} where UserRoleId='{1}'", userRoleActionsTableName, userRoleId));
+            //SqlConnection con = GetConnection();
+            //SqlCommand cmd = new SqlCommand();
+            //cmd.Connection = con;
+            //if (isUser)
+            //{
+            //    cmd.CommandText = "aspnet_Authorization_GetUserActions";
+            //    cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
+            //}
+            //else
+            //{
+            //    cmd.CommandText = "aspnet_Authorization_GetRoleActions";
+            //    cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
+            //}
+            //cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            //con.Open();
+            //SqlDataReader dr = cmd.ExecuteReader();
             List<string> actions = new List<string>();
 
             while (dr.Read())
@@ -206,8 +270,18 @@ namespace Unicorn.Web.Security.Authorization
                 actions.Add((string)dr[0]);
             }
             dr.Close();
-            con.Close();
+            //con.Close();
             return actions.ToArray();
+        }
+
+        private static string GetUserRoleId(string userOrRoleName, bool isUser)
+        {
+            string userRoleId;
+            if (isUser)
+                userRoleId = ExecuteScalar(string.Format("select userid from {0} where lower(username)='{1}'", usersTableName, userOrRoleName.ToLower())).ToString();
+            else
+                userRoleId = ExecuteScalar(string.Format("select roleid from {0} where lower(rolename)='{1}'", rolesTableName, userOrRoleName.ToLower())).ToString();
+            return userRoleId;
         }
         #endregion
 
@@ -230,45 +304,52 @@ namespace Unicorn.Web.Security.Authorization
         }
         private static void AddAction(string userOrRoleName, string actionText, bool isUser)
         {
-            SqlConnection con = GetConnection();
-            SqlCommand cmd = new SqlCommand();
-            cmd.Connection = con;
+            string userRoleId = GetUserRoleId(userOrRoleName, isUser);
+            //SqlConnection con = GetConnection();
+            //SqlCommand cmd = new SqlCommand();
+            //cmd.Connection = con;
+            ExecuteScalar("insert into " + userRoleActionsTableName + " (userRoleId, ActionName) values (@uid, @ac)",
+                new SqlParameter("@uid", userRoleId), new SqlParameter("@ac", actionText));
             if (isUser)
             {
                 log.Trace(m => m("User: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
-                cmd.CommandText = "aspnet_Authorization_AddActionForUser";
-                cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
-                UserAuthorizationChanged(HttpContext.Current, userOrRoleName);
+                //cmd.CommandText = "aspnet_Authorization_AddActionForUser";
+                //cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
+                //UserAuthorizationChanged(HttpContext.Current, userOrRoleName);
             }
             else
             {
                 log.Trace(m => m("Role: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
-                cmd.CommandText = "aspnet_Authorization_AddActionForRole";
-                cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
-                RoleAuthorizationChanged(HttpContext.Current, userOrRoleName);
+                //cmd.CommandText = "aspnet_Authorization_AddActionForRole";
+                //cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
+                //RoleAuthorizationChanged(HttpContext.Current, userOrRoleName);
             }
-            cmd.Parameters.Add(new SqlParameter("@ActionText", actionText));
-            cmd.CommandType = System.Data.CommandType.StoredProcedure;
-            con.Open();
-            cmd.ExecuteNonQuery();
-            con.Close();
+            //cmd.Parameters.Add(new SqlParameter("@ActionText", actionText));
+            //cmd.CommandType = System.Data.CommandType.StoredProcedure;
+            //con.Open();
+            //cmd.ExecuteNonQuery();
+            //con.Close();
         }
         public static void ClearUserActions(string userName)
         {
-            SqlHelper.ExecuteNonQueryProcedure("aspnet_Authorization_ClearUserActions", new SqlParameter("@UserName", userName));
+            string userRoleId = GetUserRoleId(userName, true);
+            ExecuteScalar("delete " + userRoleActionsTableName + " where userroleid=@uid",
+                new SqlParameter("@uid", userRoleId));
+            //SqlHelper.ExecuteNonQueryProcedure("aspnet_Authorization_ClearUserActions", new SqlParameter("@UserName", userName));
             AuthorizationManager.UserAuthorizationChanged(userName);
         }
         public static void ClearUserActions(string userName, string actionPrefix)
         {
-            var o = SqlHelper.ExecuteScaler("SELECT UserId FROM dbo.aspnet_Users WHERE LoweredUserName = @user",
-                new SqlParameter("@user", userName.ToLower()));
-            if (o == null || o == DBNull.Value)
-                return;
+            string userRoleId = GetUserRoleId(userName, true);
+            //var user = Membership.GetUser(userName);
+            //var o = user.ProviderUserKey;
+            //if (o == null || o == DBNull.Value)
+            //    return;
 
-            string id = o.ToString();
+            //string id = o.ToString();
             string where = GetActionPrefixCondition(actionPrefix);
-            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where upper(UserRoleId)=@id and " + where
-                , new SqlParameter("@id", id)
+            ExecuteScalar("delete from " + userRoleActionsTableName + " where upper(UserRoleId)=@id and " + where
+                , new SqlParameter("@id", userRoleId)
                 , new SqlParameter("@len", actionPrefix.Length)
                 , new SqlParameter("@prefix", actionPrefix));
             AuthorizationManager.UserAuthorizationChanged(userName);
@@ -284,22 +365,35 @@ namespace Unicorn.Web.Security.Authorization
         }
         public static void ClearRoleActions(string roleName, string actionPrefix)
         {
-            var o = SqlHelper.ExecuteScaler("SELECT RoleId FROM dbo.aspnet_Roles WHERE LoweredRoleName = @role",
-                new SqlParameter("@role", roleName.ToLower()));
-            if (o == null || o == DBNull.Value)
-                return;
-            string id = o.ToString();
+            string userRoleId = GetUserRoleId(roleName, false);
+            //object o;
+            //try
+            //{
+            //    o = SqlHelper.ExecuteScaler("SELECT RoleId FROM dbo.aspnet_Roles WHERE LoweredRoleName = @role",
+            //        new SqlParameter("@role", roleName.ToLower()));
+            //}
+            //catch (SqlException)
+            //{
+            //    o = SqlHelper.ExecuteScaler("SELECT RoleId FROM dbo.Roles WHERE Lower(RoleName) = @role",
+            //        new SqlParameter("@role", roleName.ToLower()));
+            //}
+            //if (o == null || o == DBNull.Value)
+            //    return;
+            //string id = o.ToString();
 
             string where = GetActionPrefixCondition(actionPrefix);
-            SqlHelper.ExecuteNonQuery("delete from aspnet_UserRoleActions where UserRoleId=@id and " + where
-                , new SqlParameter("@id", id)
+            SqlHelper.ExecuteNonQuery("delete from " + userRoleActionsTableName + " where UserRoleId=@id and " + where
+                , new SqlParameter("@id", userRoleId)
                 , new SqlParameter("@len", actionPrefix.Length)
                 , new SqlParameter("@prefix", actionPrefix));
             RoleAuthorizationChanged(roleName);
         }
         public static void ClearRoleActions(string roleName)
         {
-            SqlHelper.ExecuteNonQueryProcedure("aspnet_Authorization_ClearRoleActions", new SqlParameter("@RoleName", roleName));
+            string userRoleId = GetUserRoleId(roleName, false);
+            ExecuteScalar("delete " + userRoleActionsTableName + " where userroleid=@uid",
+                new SqlParameter("@uid", userRoleId));
+            //SqlHelper.ExecuteNonQueryProcedure("aspnet_Authorization_ClearRoleActions", new SqlParameter("@RoleName", roleName));
             RoleAuthorizationChanged(roleName);
         }
         #endregion
@@ -327,12 +421,22 @@ namespace Unicorn.Web.Security.Authorization
             }
         }
 
-        public static AuthorizedAction GetLocalizedAction(Func<string, string> localizer)
+        public static AuthorizedAction GetLocalizedAction(Func<string, string> localizer)//, bool filterUserAccess = true)
         {
             var actions = (AuthorizedAction)AuthorizationManager.actions.Clone();
+            //FilterUserAccess(actions);
             LocalizeAction(actions, localizer);
             return actions;
         }
+
+        //private static void FilterUserAccess(string parentAction, AuthorizedAction actions)
+        //{
+        //    for (int i = 0; i < actions.SubActions.Count; i++)
+        //    {
+        //        if(AuthorizationChecker.HasAccess(actions.SubActions[i].FullName, true))
+
+        //    }
+        //}
 
         public static void LocalizeAction(AuthorizedAction action, Func<string, string> localizer)
         {

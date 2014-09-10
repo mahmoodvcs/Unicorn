@@ -10,7 +10,7 @@ using Unicorn.Web.Security;
 
 namespace Unicorn.Web.UI
 {
-    [ToolboxData("<{0}:JcoManageAccesses runat=server></{0}:JcoManageAccesses>")]
+    [ToolboxData("<{0}:ManageAccesses runat=server></{0}:ManageAccesses>")]
     public class ManageAccesses : CompositeControl
     {
         TreeView uxActionsTree;
@@ -203,7 +203,7 @@ namespace Unicorn.Web.UI
             string[] actions = GetUserActions(uxUsers.SelectedValue);
             foreach (string ac in actions)
             {
-                CheckNode(FindNode(uxActionsTree.Nodes, ac.Name), ac);
+                CheckNode(FindNode(uxActionsTree.Nodes, ac), ac);
             }
             ViewState["prevUser"] = uxUsers.SelectedValue;
             ViewState.Remove("prevRole");
@@ -217,7 +217,7 @@ namespace Unicorn.Web.UI
             string[] actions = GetRoleActions(uxRoles.SelectedValue);
             foreach (string ac in actions)
             {
-                CheckNode(FindNode(uxActionsTree.Nodes, ac.Name), ac);
+                CheckNode(FindNode(uxActionsTree.Nodes, ac), ac);
             }
             ViewState["prevRole"] = uxRoles.SelectedValue;
             ViewState.Remove("prevUser");
@@ -235,7 +235,7 @@ namespace Unicorn.Web.UI
         {
             foreach (TreeNode node in nodes)
             {
-                if (node.Value == value)
+                if (node.ValuePath == value)
                     return node;
             }
             return null;
@@ -244,14 +244,15 @@ namespace Unicorn.Web.UI
         {
             if (node == null)
                 return;
-            if (ac.SubActions.Count == 0)
+            if( node.ValuePath == ac)
                 node.Checked = true;
             else
-                foreach (AuthorizedAction item in ac.SubActions)
+                foreach (TreeNode ch in node.ChildNodes)
                 {
-                    TreeNode ch = FindNode(node.ChildNodes, item.Name);
-                    if (ch != null)
-                        CheckNode(ch, item);
+            		CheckNode(ch, ac);
+                    //TreeNode ch = FindNode(node.ChildNodes, item.Name);
+                    //if (ch != null)
+                     //   CheckNode(ch, item);
                 }
         }
 

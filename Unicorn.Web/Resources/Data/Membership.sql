@@ -2304,6 +2304,7 @@ BEGIN
         ApplicationId    uniqueidentifier    NOT NULL FOREIGN KEY REFERENCES dbo.aspnet_Applications(ApplicationId),
         RoleId           uniqueidentifier    PRIMARY KEY  NONCLUSTERED DEFAULT NEWID(),
         RoleName         nvarchar(256)       NOT NULL,
+		Options         nvarchar(256)       NULL,
         LoweredRoleName  nvarchar(256)       NOT NULL,
         Title  nvarchar(256)       NULL,
         Description      nvarchar(256)       )

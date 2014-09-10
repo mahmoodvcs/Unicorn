@@ -160,7 +160,7 @@ namespace Unicorn.Web.Security.Configuration
                             lconf.Save();
                         }
                     }
-                    WebConfigInitializer.CreateHttpHandler(ConfigUtility.GetSystemWebSectionGroup(conf));
+                    //WebConfigInitializer.CreateHttpHandler(ConfigUtility.GetSystemWebSectionGroup(conf));
                     conf.Save();
                 }
                 catch (Exception ex)
@@ -201,6 +201,8 @@ namespace Unicorn.Web.Security.Configuration
 
         public static bool CheckAppConfiguration(out string error)
         {
+        	//error="";
+        	//return true;
             try
             {
                 error = "";
@@ -225,9 +227,9 @@ namespace Unicorn.Web.Security.Configuration
                     error = "Roles is not enabled.";
                 if (error != "")
                     return false;
-                UniSecuritySectionGroup jcoSec = (UniSecuritySectionGroup)conf.GetSectionGroup("uniSecurity");
-                if (jcoSec == null)
-                    error = "UniSecuritySectionGroup is not defined.";
+                //UniSecuritySectionGroup jcoSec = (UniSecuritySectionGroup)conf.GetSectionGroup("uniSecurity");
+                //if (jcoSec == null)
+                //    error = "UniSecuritySectionGroup is not defined.";
                 //if (jcoSec.MasterPage.Path == "")
                 //	error = "JcoSecuritySectionGroup.MasterPage.Path is empty.";
                 if (error != "")

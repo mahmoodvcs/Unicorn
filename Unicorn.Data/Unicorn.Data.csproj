@@ -32,9 +32,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Common.Logging">
-      <HintPath>..\..\DataCenter\packages\Common.Logging.2.1.2\lib\net40\Common.Logging.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Data" />
@@ -46,9 +43,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AppConfigSaver.cs" />
     <Compile Include="DataReader.cs" />
     <Compile Include="DbDataReaderMethods.cs" />
     <Compile Include="DBDataUtility.cs" />
+    <Compile Include="Extentions.cs" />
     <Compile Include="ImageResizer.cs" />
     <Compile Include="KnoemaLocalizationHelper.cs" />
     <Compile Include="MultiKeyDictionary.cs" />
@@ -57,7 +56,9 @@
     <Compile Include="Record.cs" />
     <Compile Include="ConnectionManager.cs" />
     <Compile Include="SqlReaderStream.cs" />
+    <Compile Include="STA_INIFile.cs" />
     <Compile Include="ThreadLocalRandom.cs" />
+    <Compile Include="TitleAttribute.cs" />
     <Compile Include="TransactionScope.cs" />
     <Compile Include="SqlHelper.cs" />
     <Compile Include="ColumnInfo.cs" />

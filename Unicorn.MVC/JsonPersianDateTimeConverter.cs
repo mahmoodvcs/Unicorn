@@ -1,0 +1,41 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
+using Unicorn.Web;
+
+namespace Unicorn.MVC
+{
+    public class JsonPersianDateTimeConverter : Newtonsoft.Json.Converters.DateTimeConverterBase
+    {
+        private bool ConvertTime;
+        private bool ArabicNumerals;
+
+        public JsonPersianDateTimeConverter(bool convertTime = false, bool arabicNumerals = false)
+        {
+            // TODO: Complete member initialization
+            this.ConvertTime = convertTime;
+            this.ArabicNumerals = arabicNumerals;
+        }
+        public override bool CanConvert(Type objectType)
+        {
+            return (objectType == typeof(DateTime));
+        }
+        public override void WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
+        {
+            var dt = (Unicorn.PersianDateTime)(DateTime)value;
+            string val;
+            if (ConvertTime)
+                val = dt.ToShortDateTimeString();
+            else
+                val = dt.ToShortDateString();
+            if (ArabicNumerals)
+                val = val.ToArabicNumerals();
+            writer.WriteValue(val);
+        }
+        public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
+        {
+            return Unicorn.PersianDateTimeConverter.ShamsiToMiladi(Unicorn.PersianDateTime.Parse(reader.Value.ToString()));
+        }
+    }
+}

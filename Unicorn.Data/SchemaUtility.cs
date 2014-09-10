@@ -91,6 +91,7 @@ namespace Unicorn.Data
             TableInfo table = null;
             if (connection is SqlConnection || connection is OleDbConnection)
             {
+                //SetTransactionIsolationLevel(connection);
                 DataTable dt = connection.GetSchema("Tables", new string[] { null, tableOwner, tableName });
                 if (dt.Rows.Count > 0)
                 {
@@ -123,6 +124,13 @@ namespace Unicorn.Data
             //ConnectionManager.Instance.ReleaseConnection();
             connection.Close();
             return table;
+        }
+
+        private static void SetTransactionIsolationLevel(DbConnection connection)
+        {
+            var cmd = connection.CreateCommand();
+            cmd.CommandText="set transaction isolation level read uncommitted";
+            cmd.ExecuteNonQuery();
         }
 
         public static void ReadTableColumns(DbConnection connection, TableInfo table)
@@ -219,6 +227,11 @@ namespace Unicorn.Data
         public static void CreateTableOrSyncSchema(TableInfo table)
         {
             TableInfo dbTable = GetTable(table.TableOwner, table.TableName);
+            CreateTableOrSyncSchema(dbTable, table);
+        }
+        public static void CreateTableOrSyncSchema(TableInfo oldTableInfo, TableInfo table)
+        {
+            TableInfo dbTable = oldTableInfo;
             DatabaseType dbType = ConnectionManager.DatabaseType;
             //DbCommand command = SqlHelper.CreateCommand();
             //command.CommandType = CommandType.Text;
@@ -495,6 +508,13 @@ INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_colu
 
         #endregion Helper class
 
+        public static bool CheckTableExists(string tableName)
+        {
+            var n = (int)SqlHelper.ExecuteScaler(string.Format(@"SELECT count(*) FROM INFORMATION_SCHEMA.TABLES
+WHERE TABLE_NAME = '{0}'", tableName));
+            return n > 0;
+        }
+
 
     }
 
@@ -504,6 +524,7 @@ INNER JOIN sys.columns c ON df.parent_object_id = c.object_id AND df.parent_colu
         SQLServer,
         Oracle,
         OleDb,
-        SQLite
+        SQLite,
+        SqlEC
     }
 }

@@ -37,7 +37,7 @@ namespace Unicorn.Web.UI
             if (!Page.IsPostBack)
             {
                 if (AuthorizationManager.Actions.SubActions.Count == 0)
-                    AuthorizationManager.AddActionsFromSiteMap();
+                    AuthorizationManager.AddActionsFromSiteMap(AuthorizationManager.Actions);
                 MakeTree(uxAccesses.ActionsTree, AuthorizationManager.Actions);
             }
             base.OnLoad(e);
