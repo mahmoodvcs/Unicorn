@@ -20,20 +20,24 @@ namespace Unicorn
 		{
 			get { return title; }
 		}
-		
-		public static string GetTitle<EnumType>()
+
+        public static string GetTitle<EnumType>() where EnumType : struct, IConvertible
 		{
 			var t=typeof(EnumType);
 			return GetTitle(t, t.Name);
 		}
-		public static string GetTitle<EnumType>(EnumType member)
+        public static string GetTitle<EnumType>(EnumType member) where EnumType : struct, IConvertible
 		{
             return GetTitle<EnumType>(member.ToString());
         }
-        public static string GetTitle<EnumType>(string memberName)
+        public static string GetTitle<EnumType>(string memberName) where EnumType : struct, IConvertible
         {
             var t = typeof(EnumType);
             return GetTitle(t.GetField(memberName, BindingFlags.Public | BindingFlags.Static), memberName, t);
+        }
+        public static string GetTitle(PropertyInfo typeMember)
+        {
+            return GetTitle((ICustomAttributeProvider)typeMember, null, null);
         }
 		public static string GetTitle(ICustomAttributeProvider typeMember, string name = null, Type containingType = null)
 		{

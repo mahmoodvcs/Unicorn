@@ -49,6 +49,10 @@
     <Reference Include="System.Web.Providers">
       <HintPath>..\packages\Microsoft.AspNet.Providers.Core.2.0.0\lib\net40\System.Web.Providers.dll</HintPath>
     </Reference>
+    <Reference Include="System.Web.WebPages, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.0\lib\net45\System.Web.WebPages.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,11 +62,14 @@
   <ItemGroup>
     <Compile Include="AuthorizeActionAttribute.cs" />
     <Compile Include="AutoUnlockMembershipProvider.cs" />
+    <Compile Include="HtmlHelpers.cs" />
     <Compile Include="JsonDataContractActionResult.cs" />
     <Compile Include="JsonDictionary.cs" />
     <Compile Include="JsonNetResult.cs" />
     <Compile Include="JsonPersianDateTimeConverter.cs" />
+    <Compile Include="MVCHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TagBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Unicorn.Data\Unicorn.Data.csproj">

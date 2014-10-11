@@ -42,6 +42,7 @@
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.Web.Extensions" />
@@ -49,15 +50,10 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Web" />
-    <Reference Include="Telerik.Web.UI">
-      <HintPath>..\..\..\Softwares\Software Development\Components\Telerik\Telerik.2013.Q1\Bin40\Telerik.Web.UI.dll</HintPath>
-    </Reference>
-    <Reference Include="TimePicker">
-      <HintPath>D:\Downloads\Programming\TimePicker\TimePicker.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ControlUtility.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
@@ -74,51 +70,17 @@
     <Compile Include="Security\Authorization\TitleAttribute.cs" />
     <Compile Include="Security\AutoUnlockMembershipProvider.cs" />
     <Compile Include="Security\Configuration\AccessActionsSection.cs" />
-    <Compile Include="Security\Configuration\ConfigInitializer.cs" />
-    <Compile Include="Security\Configuration\ConfigurationPage.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Security\Configuration\ConfigUtility.cs" />
-    <Compile Include="Security\Configuration\UniSecuritySectionGroup.cs" />
     <Compile Include="Security\Configuration\MasterPageSection.cs" />
-    <Compile Include="Security\Configuration\WebConfigInitializer.cs" />
-    <Compile Include="Security\CreateUserPage.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
-    <Compile Include="Security\UniHttpHandler.cs" />
+    <Compile Include="Security\Configuration\UniSecuritySectionGroup.cs" />
     <Compile Include="Security\UniMembershipProvider.cs" />
     <Compile Include="Security\UniProfile.cs" />
     <Compile Include="Security\UniRole.cs" />
     <Compile Include="Security\UniRoles.cs" />
     <Compile Include="Security\MyRoleManager.cs" />
-    <Compile Include="Security\PageWithMaster.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Security\PersonalizationProviderHelper.cs" />
     <Compile Include="Security\SecUtil.cs" />
-    <Compile Include="UI\DataForm\AutomaticDataColumn.cs" />
-    <Compile Include="UI\DataForm\DataColumn.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\DateTemplate.cs" />
-    <Compile Include="UI\EditUserRoles.cs" />
-    <Compile Include="UI\IDataControl.cs" />
-    <Compile Include="UI\AdminMenu.cs" />
-    <Compile Include="UI\ChangePassword.cs" />
-    <Compile Include="UI\CreateUserWizard.cs" />
-    <Compile Include="UI\ManageAccesses.cs" />
-    <Compile Include="UI\ManageMenuAccesses.cs" />
-    <Compile Include="UI\UniDataGrid.cs" />
-    <Compile Include="UI\UniDataToolbar.cs" />
-    <Compile Include="UI\EditUser.cs" />
-    <Compile Include="UI\Login.cs" />
-    <Compile Include="UI\LoginStatus.cs" />
-    <Compile Include="UI\LoginView.cs" />
-    <Compile Include="UI\ManageAllRoles.cs" />
-    <Compile Include="UI\ManageSingleRole.cs" />
-    <Compile Include="UI\ManageUsers.cs" />
-    <Compile Include="UI\UniHtmlList.cs" />
-    <Compile Include="UI\UniNumericBox.cs" />
-    <Compile Include="UI\UniTextBox.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="WebUtility.cs" />
   </ItemGroup>

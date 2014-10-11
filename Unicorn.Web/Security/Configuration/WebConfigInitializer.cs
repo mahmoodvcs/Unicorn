@@ -33,24 +33,24 @@ namespace Unicorn.Web.Security.Configuration
 			conf.Save();
 		}
 
-        public static void CreateHttpHandler(SystemWebSectionGroup websec)
-        {
-            HttpHandlersSection httpHandlers = websec.HttpHandlers;
-            bool found = false;
-            foreach (HttpHandlerAction handler in httpHandlers.Handlers)
-            {
-                if (handler.Path == UniHttpHandler.HandlerPath)
-                {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found)
-            {
-                HttpHandlerAction handler = new HttpHandlerAction(UniHttpHandler.HandlerPath, "Unicorn.Web.Security.JcoHttpHandler, Unicorn.Web", "*");
-                httpHandlers.Handlers.Add(handler);
-            }
-        }
+        //public static void CreateHttpHandler(SystemWebSectionGroup websec)
+        //{
+        //    HttpHandlersSection httpHandlers = websec.HttpHandlers;
+        //    bool found = false;
+        //    foreach (HttpHandlerAction handler in httpHandlers.Handlers)
+        //    {
+        //        if (handler.Path == UniHttpHandler.HandlerPath)
+        //        {
+        //            found = true;
+        //            break;
+        //        }
+        //    }
+        //    if (!found)
+        //    {
+        //        HttpHandlerAction handler = new HttpHandlerAction(UniHttpHandler.HandlerPath, "Unicorn.Web.Security.JcoHttpHandler, Unicorn.Web", "*");
+        //        httpHandlers.Handlers.Add(handler);
+        //    }
+        //}
         private static void InitConfigSections(ref System.Configuration.Configuration conf)
 		{
 			if ( conf.GetSectionGroup( "uniSecurity" ) != null )

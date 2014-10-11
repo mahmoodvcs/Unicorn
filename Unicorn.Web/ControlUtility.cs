@@ -4,7 +4,6 @@ using System.Web.UI;
 using System.Collections.Generic;
 using System.Web;
 using System.IO;
-using Telerik.Web.UI;
 
 namespace Unicorn.Web
 {
@@ -21,23 +20,6 @@ namespace Unicorn.Web
             gridView.DataBound += new EventHandler(grid_view_DataBound);
         }
 
-        /// <summary>
-        /// اولين ستون گريدويو را به عنوان ستون رديف شماره دهي مي نمايد.
-        /// اين متد بايد در oninit صفحه صدا زده شود.
-        /// </summary>
-        /// <param name="gridView"></param>
-        public static void SetRowColumn(RadGrid radGrid)
-        {
-            FillGridViewRowCloumn(radGrid);
-            radGrid.DataBound += new EventHandler(radGrid_DataBound);
-        }
-
-        public static void radGrid_DataBound(object sender, EventArgs e)
-        {
-            RadGrid grid = (RadGrid)sender;
-            //int i1 = gridView.PageIndex * gridView.PageSize;
-            FillGridViewRowCloumn(grid);
-        }
 
         private static void FillGridViewRowCloumn(GridView gridView)
         {
@@ -48,14 +30,14 @@ namespace Unicorn.Web
             }
         }
 
-        private static void FillGridViewRowCloumn(RadGrid gridView)
-        {
-            for (int i = 0; i < gridView.MasterTableView.Items.Count; i++)
-            {
-                int rowIndex = gridView.MasterTableView.CurrentPageIndex * gridView.MasterTableView.PageSize + i + 1;
-                gridView.Items[i].Cells[2].Text = rowIndex.ToString();
-            }
-        }
+        //private static void FillGridViewRowCloumn(RadGrid gridView)
+        //{
+        //    for (int i = 0; i < gridView.MasterTableView.Items.Count; i++)
+        //    {
+        //        int rowIndex = gridView.MasterTableView.CurrentPageIndex * gridView.MasterTableView.PageSize + i + 1;
+        //        gridView.Items[i].Cells[2].Text = rowIndex.ToString();
+        //    }
+        //}
 
         public static void grid_view_DataBound(object sender, EventArgs e)
         {

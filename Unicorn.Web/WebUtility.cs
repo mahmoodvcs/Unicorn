@@ -251,6 +251,11 @@ namespace Unicorn.Web
             return sOut;
         }
 
+        public static string MapPathReverse(string fullPhysicalPath)
+        {
+            return @"~\" + fullPhysicalPath.Replace(HttpContext.Current.Request.PhysicalApplicationPath, String.Empty);
+        }
+        
         public static string GetContentTypeFromFileName(string fileName)
         {
             return GetContentType(Path.GetExtension(fileName));
@@ -300,6 +305,8 @@ namespace Unicorn.Web
         {
             System.Web.HttpContext context = System.Web.HttpContext.Current;
 
+            if (context == null)
+                return null;
             string ipAddress = context.Request.ServerVariables["HTTP_X_FORWARDED_FOR"];
 
             if (!string.IsNullOrEmpty(ipAddress))

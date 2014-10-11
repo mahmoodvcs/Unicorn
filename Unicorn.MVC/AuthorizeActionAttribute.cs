@@ -1,15 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Principal;
 using System.Web;
 using System.Web.Mvc;
+using System.Web.Routing;
 using Unicorn.Web.Security.Authorization;
 
 namespace Unicorn.MVC
 {
-    [AttributeUsage(AttributeTargets.Class|AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public sealed class AuthorizeActionAttribute : AuthorizeAttribute
     {
+        public static string UnauthorizedRedirectAction { get; set; }
+        public static string UnauthorizedRedirectController { get; set; }
         public AuthorizeActionAttribute(string action)
         {
             this.action = action;
@@ -23,13 +27,35 @@ namespace Unicorn.MVC
         }
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
-            if (AuthorizationChecker.HasAccess(httpContext.User.Identity.Name, action))
-                return true;
+            if (httpContext == null)
+                throw new ArgumentNullException("httpContext");
+
+            IPrincipal user = httpContext.User;
+            if (!user.Identity.IsAuthenticated)
+                return false;
+            var access = AuthorizationChecker.HasAccess(httpContext.User.Identity.Name, action);
+            if (access || (string.IsNullOrEmpty(Roles) && string.IsNullOrEmpty(Users)))
+                return access;
+
             return base.AuthorizeCore(httpContext);
         }
-        public override void OnAuthorization(AuthorizationContext filterContext)
+        //public override void OnAuthorization(AuthorizationContext filterContext)
+        //{
+        //    base.OnAuthorization(filterContext);
+        //}
+        protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
         {
-            base.OnAuthorization(filterContext);
+            if (!string.IsNullOrEmpty(UnauthorizedRedirectAction) && !string.IsNullOrEmpty(UnauthorizedRedirectController))
+                filterContext.Result = new RedirectToRouteResult(
+                            new RouteValueDictionary(
+                                new
+                                {
+                                    controller = UnauthorizedRedirectController,
+                                    action = UnauthorizedRedirectAction
+                                })
+                            );
+            else
+                base.HandleUnauthorizedRequest(filterContext);
         }
     }
 
