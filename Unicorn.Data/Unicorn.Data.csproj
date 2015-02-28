@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AppConfigSaver.cs" />
+    <Compile Include="ApplicationSettingsBase.cs" />
     <Compile Include="DataReader.cs" />
     <Compile Include="DbDataReaderMethods.cs" />
     <Compile Include="DBDataUtility.cs" />

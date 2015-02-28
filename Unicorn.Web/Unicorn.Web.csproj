@@ -57,6 +57,7 @@
     <Compile Include="PageBase.cs">
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
+    <Compile Include="Roles.cs" />
     <Compile Include="Security\Authorization\AuthorizationChecker.cs" />
     <Compile Include="Security\Authorization\AuthorizationManager.cs" />
     <Compile Include="Security\Authorization\AuthorizationPage.cs">
@@ -67,7 +68,6 @@
     <Compile Include="Security\Authorization\AuthorizeRoleAttribute.cs" />
     <Compile Include="Security\Authorization\AuthorizeUserAttribute.cs" />
     <Compile Include="Security\Authorization\IAuthorize.cs" />
-    <Compile Include="Security\Authorization\TitleAttribute.cs" />
     <Compile Include="Security\AutoUnlockMembershipProvider.cs" />
     <Compile Include="Security\Configuration\AccessActionsSection.cs" />
     <Compile Include="Security\Configuration\ConfigUtility.cs" />
@@ -81,6 +81,8 @@
     <Compile Include="Security\PersonalizationProviderHelper.cs" />
     <Compile Include="Security\SecUtil.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\ManageAllRoles.cs" />
+    <Compile Include="UI\UniHtmlList.cs" />
     <Compile Include="Utility.cs" />
     <Compile Include="WebUtility.cs" />
   </ItemGroup>

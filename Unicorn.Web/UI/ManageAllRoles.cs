@@ -38,20 +38,20 @@ namespace Unicorn.Web.UI
 			set { ViewState["AllowDelete"] = value; }
 		}
 
-		[Browsable(true)]
-		[DefaultValue(true)]
-		[Category("Behavior")]
-		public bool AllowManage
-		{
-			get
-			{
-				object o = ViewState["AllowNew"];
-				if (o != null)
-					return (bool)o;
-				return true;
-			}
-			set { ViewState["AllowNew"] = value; }
-		}
+        [Browsable(true)]
+        [DefaultValue("")]
+        [Category("Behavior")]
+        public string EditAccessesPageUrl
+        {
+            get
+            {
+                object o = ViewState["EditAccessesPageUrl"];
+                if (o != null)
+                    return (string)o;
+                return "";
+            }
+            set { ViewState["EditAccessesPageUrl"] = value; }
+        }
 
 		//[Browsable( true )]
 		//[DefaultValue( true )]
@@ -99,12 +99,19 @@ namespace Unicorn.Web.UI
 			//col.HeaderText = "نام نقش كاربري";
 			//uxRoles.Columns.Add( col );
 
-			if (AllowManage)
-			{
-				TemplateField tmp = new TemplateField();
-				tmp.ItemTemplate = new ManageButtonTemplate();
-				uxRoles.Columns.Add(tmp);
-			}
+            //if (AllowManage)
+            //{
+            //    TemplateField tmp = new TemplateField();
+            //    tmp.ItemTemplate = new ManageButtonTemplate();
+            //    uxRoles.Columns.Add(tmp);
+            //}
+            if (!string.IsNullOrEmpty(EditAccessesPageUrl))
+            {
+                TemplateField tmp = new TemplateField();
+                //TemplateColumn tmp = new TemplateColumn();
+                tmp.ItemTemplate = new EditAccessesButtonTemplate(EditAccessesPageUrl, "ویرایش دسنرسی ها");
+                uxRoles.Columns.Add(tmp);
+            }
 			if (AllowDelete)
 			{
 				TemplateField tmp = new TemplateField();
@@ -179,7 +186,7 @@ namespace Unicorn.Web.UI
 		}
 		private void BindGrid()
 		{
-			if (Roles.Enabled)
+			if (System.Web.Security.Roles.Enabled)
 			{
 				var roles = UniRoles.GetAllRoles();
 				uxRoles.DataSource = roles;
@@ -196,7 +203,7 @@ namespace Unicorn.Web.UI
 			else
 			{
 				uxRoles.Visible = false;
-				Unicorn.Web.Security.Configuration.ConfigInitializer.CheckConfig(this);
+				//Unicorn.Web.Security.Configuration.ConfigInitializer.CheckConfig(this);
 			}
 			//uxRoles.Visible = (uxRoles.Rows.Count > 0);
 		}
@@ -207,13 +214,13 @@ namespace Unicorn.Web.UI
 			switch (e.CommandName)
 			{
 				case "del":
-					if (Roles.FindUsersInRole((string)e.CommandArgument, "%").Length > 0)
+                    if (System.Web.Security.Roles.FindUsersInRole((string)e.CommandArgument, "%").Length > 0)
 					{
 						Unicorn.Web.WebUtility.ShowMessageBox("خطا: اين نقش نمي تواند حذف شود زيرا تعدادي کاربر در اين نقش وجود دارد", Page);
 					}
 					else
 					{
-						Roles.DeleteRole((string)e.CommandArgument);
+                        System.Web.Security.Roles.DeleteRole((string)e.CommandArgument);
 						BindGrid();
 					}
 					break;
@@ -260,6 +267,33 @@ namespace Unicorn.Web.UI
                 b.CommandArgument = ((UniRole)row.DataItem).RoleName;
 			}
 		}
+        public class EditAccessesButtonTemplate : ITemplate
+        {
+            public EditAccessesButtonTemplate(string url, string title = null)
+            {
+                this.url = url;
+                this.title = title;
+            }
+            string url, title;
+
+            public void InstantiateIn(Control container)
+            {
+                HyperLink lnk = new HyperLink();
+                lnk.Text = title ?? "ويرايش کاربر";
+                //Button btn = new Button();
+                //btn.CommandName = "edit";
+                lnk.DataBinding += new EventHandler(btn_DataBinding);
+                //btn.Text = "ويرايش كاربر";
+                container.Controls.Add(lnk);
+            }
+
+            void btn_DataBinding(object sender, EventArgs e)
+            {
+                HyperLink lnk = (HyperLink)sender;
+                GridViewRow row = (GridViewRow)lnk.NamingContainer;
+                lnk.NavigateUrl = string.Format(url, ((UniRole)row.DataItem).RoleName);
+            }
+        }
 		#endregion
 
 	}

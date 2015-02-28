@@ -230,6 +230,11 @@ namespace Unicorn.Data
         {
             var p = CreateParameter();
             p.ParameterName = parameterName;
+            if (value != null && value.GetType().Name.StartsWith("Sql"))
+            {
+                ((SqlParameter)p).SqlDbType = SqlDbType.Udt;
+                ((SqlParameter)p).UdtTypeName = value.GetType().Name.Remove(0,3).ToLower();
+            }
             p.Value = value;
             return p;
         }

@@ -91,7 +91,7 @@ namespace Unicorn.Data
             return "nvarchar2";
         }
 
-     
+
 
         public static DbType GetDbTypeFromSqlTypeName(string typeName)
         {
@@ -160,7 +160,7 @@ namespace Unicorn.Data
                     return DbType.Object;
             }
         }
-        public static string GetSqlTypeNameFromDbType(DbType dbType)
+        public static string GetSqlTypeNameFromDbType(DbType dbType, string typeName = null)
         {
             switch (dbType)
             {
@@ -208,6 +208,8 @@ namespace Unicorn.Data
                 case DbType.AnsiString:
                     return "varchar";
                 case DbType.Object:
+                    if (typeName != null)
+                        return typeName;
                     return "variant";
                 default:
                     return "nvarchar";

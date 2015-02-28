@@ -79,16 +79,20 @@ namespace Unicorn.Web.Security.Authorization
         }
         public static bool HasAccess<EnumType>(EnumType action, bool checkAnyAccessToSubActions = false)
         {
-            return HasAccess(typeof(EnumType).Name + "." + action.ToString(), checkAnyAccessToSubActions);
+            return HasAccessForEnum(typeof(EnumType).Name, action.ToString(), checkAnyAccessToSubActions);
         }
         public static bool HasAccess<EnumType>(string parentAction, EnumType action, bool checkAnyAccessToSubActions = false)
         {
-            return HasAccess(parentAction + "." + typeof(EnumType).Name + "." + action.ToString(), checkAnyAccessToSubActions);
+            return HasAccessForEnum(parentAction + "." + typeof(EnumType).Name, action.ToString(), checkAnyAccessToSubActions);
+        }
+        private static bool HasAccessForEnum(string parentAction, string action, bool checkAnyAccessToSubActions = false)
+        {
+            return HasAccess(parentAction + "." + action.Replace('_', '.'), checkAnyAccessToSubActions);
         }
         public static bool HasAccess<EnumType>(string userName, string parentAction, EnumType action, bool checkAnyAccessToSubActions = false)
         //where EnumType : enum
         {
-            string ac = typeof(EnumType).Name + "." + action.ToString();
+            string ac = typeof(EnumType).Name + "." + action.ToString().Replace('_', '.');
             if (!string.IsNullOrEmpty(parentAction))
                 ac = parentAction + "." + ac;
             if (!string.IsNullOrEmpty(userName))

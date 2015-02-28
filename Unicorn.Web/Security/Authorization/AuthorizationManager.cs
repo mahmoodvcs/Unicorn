@@ -22,11 +22,11 @@ namespace Unicorn.Web.Security.Authorization
         static AuthorizationManager()
         {
             actions = new AuthorizedAction("root");
-            log = LogManager.GetCurrentClassLogger();
-
-            if (SqlHelper.ExecuteScaler(@"SELECT * FROM INFORMATION_SCHEMA.TABLES 
+            log = new Common.Logging.Simple.NoOpLogger(); //LogManager.GetCurrentClassLogger();
+            var t = SqlHelper.ExecuteScaler(@"SELECT lower(TABLE_NAME) FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_SCHEMA = 'dbo' 
-                 AND  TABLE_NAME = 'aspnet_users'") == DBNull.Value)
+                 AND  TABLE_NAME = 'aspnet_users'");
+            if (t is string && (string)t == "aspnet_users")
             {
                 rolesTableName = "aspnet_roles";
                 usersTableName = "aspnet_users";
@@ -38,12 +38,14 @@ namespace Unicorn.Web.Security.Authorization
                 usersTableName = "users";
                 //userRolesTabeName = "UsersInRoles";
             }
-            userRoleActionsTableName = "aspnet_UserRoleActions";
+            userRoleActionsTableName = System.Web.Configuration.WebConfigurationManager.AppSettings["Uniconr.UserRoleActionsTableName"];
+            if (userRoleActionsTableName == null)
+                userRoleActionsTableName = "aspnet_UserRoleActions";
             if (SqlHelper.ExecuteScaler(@"SELECT * FROM INFORMATION_SCHEMA.TABLES 
                  WHERE TABLE_SCHEMA = 'dbo' 
                  AND  TABLE_NAME = '" + userRoleActionsTableName + "'") == null)
             {
-                ExecuteScalar(@"CREATE TABLE [dbo].[aspnet_UserRoleActions](
+                ExecuteScalar(@"CREATE TABLE [dbo].[" + userRoleActionsTableName + @"](
 	[ActionName] [nvarchar](max) NOT NULL,
 	[UserRoleId] [uniqueidentifier] NOT NULL
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
@@ -73,41 +75,48 @@ namespace Unicorn.Web.Security.Authorization
             }
             return ac;
         }
-        public static AuthorizedAction RegisterAction<EnumType>(string parentAction)
+        public static AuthorizedAction RegisterAction<EnumType>(string parentAction, bool onlyAddChilds = false)
         {
-            return RegisterAction(parentAction, typeof(EnumType));
+            return RegisterAction(parentAction, typeof(EnumType), onlyAddChilds);
         }
-        public static AuthorizedAction RegisterAction<EnumType>()
+        public static AuthorizedAction RegisterAction<EnumType>(bool onlyAddChilds = false)
         {
-            return RegisterAction(typeof(EnumType));
+            return RegisterAction(typeof(EnumType), onlyAddChilds);
         }
-        public static AuthorizedAction RegisterAction<EnumType>(AuthorizedAction parentAction)
+        public static AuthorizedAction RegisterAction<EnumType>(AuthorizedAction parentAction, bool onlyAddChilds = false)
         {
-            return RegisterAction(parentAction, typeof(EnumType));
+            return RegisterAction(parentAction, typeof(EnumType), onlyAddChilds);
         }
-        public static AuthorizedAction RegisterAction(Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(Type actionsEnumType, bool onlyAddChilds = false)
         {
             //AuthorizedAction ac = new AuthorizedAction(actionsEnumType.Name);
             //ac.Title = GetTitle(actionsEnumType, actionsEnumType.Name, actionsEnumType);
             //actions.SubActions.Add(ac);
-            return RegisterAction(actions, actionsEnumType);
+            return RegisterAction(actions, actionsEnumType, onlyAddChilds);
             //return ac;
         }
-        public static AuthorizedAction RegisterAction(string parentAction, Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(string parentAction, Type actionsEnumType, bool onlyAddChilds = false)
         {
             var ac = actions[parentAction];
             if (ac == null)
                 ac = actions.AddSubAction(parentAction);
-            RegisterAction(ac, actionsEnumType);
+            RegisterAction(ac, actionsEnumType, onlyAddChilds);
             return ac;
         }
-        public static AuthorizedAction RegisterAction(AuthorizedAction parentAction, Type actionsEnumType)
+        public static AuthorizedAction RegisterAction(AuthorizedAction parentAction, Type actionsEnumType, bool onlyAddChilds=false)
         {
             if (!actionsEnumType.IsEnum)
                 throw new ArgumentException("پارامتر بايد از نوع شمارشي باشد.", "actionsEnumType");
-            AuthorizedAction enumAction = new AuthorizedAction(actionsEnumType.Name);
-            enumAction.Title = GetTitle(actionsEnumType, enumAction.Name);
-            parentAction.SubActions.Add(enumAction);
+            AuthorizedAction enumAction;
+            if (onlyAddChilds)
+                enumAction = parentAction;
+            else
+            {
+                enumAction = new AuthorizedAction(actionsEnumType.Name);
+                enumAction.Title = GetTitle(actionsEnumType, enumAction.Name);
+                parentAction.SubActions.Add(enumAction);
+            }
+            
             FieldInfo[] fields = actionsEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
             foreach (FieldInfo fi in fields)
             {
@@ -253,6 +262,8 @@ namespace Unicorn.Web.Security.Authorization
         private static string[] GetActions(string userOrRoleName, bool isUser)
         {
             string userRoleId = GetUserRoleId(userOrRoleName, isUser);
+            if (userRoleId == null)
+                return new string[0];
             var dr = ExecuteReader(string.Format("select ActionName from {0} where UserRoleId='{1}'", userRoleActionsTableName, userRoleId));
             //SqlConnection con = GetConnection();
             //SqlCommand cmd = new SqlCommand();
@@ -284,10 +295,14 @@ namespace Unicorn.Web.Security.Authorization
         private static string GetUserRoleId(string userOrRoleName, bool isUser)
         {
             string userRoleId;
+            object o;
             if (isUser)
-                userRoleId = ExecuteScalar(string.Format("select userid from {0} where lower(username)=@un", usersTableName), new SqlParameter("@un", userOrRoleName.ToLower())).ToString();
+                o = ExecuteScalar(string.Format("select userid from {0} where lower(username)=@un", usersTableName), new SqlParameter("@un", userOrRoleName.ToLower()));
             else
-                userRoleId = ExecuteScalar(string.Format("select roleid from {0} where lower(rolename)=@un", rolesTableName), new SqlParameter("@un", userOrRoleName.ToLower())).ToString();
+                o = ExecuteScalar(string.Format("select roleid from {0} where lower(rolename)=@un", rolesTableName), new SqlParameter("@un", userOrRoleName.ToLower()));
+            if (o == null)
+                return null;
+            userRoleId = o.ToString();
             return userRoleId;
         }
         #endregion
@@ -422,7 +437,7 @@ namespace Unicorn.Web.Security.Authorization
         public static void RoleAuthorizationChanged(HttpContext context, string roleName)
         {
             log.Trace(m => m("Role: '" + roleName + "'"));
-            foreach (string u in Roles.GetUsersInRole(roleName))
+            foreach (string u in System.Web.Security.Roles.GetUsersInRole(roleName))
             {
                 UserAuthorizationChanged(context, u);
             }
@@ -482,7 +497,7 @@ namespace Unicorn.Web.Security.Authorization
                 {
                     name = node.Attributes["url"].Value;
                     if (name.ToLower().EndsWith(".aspx"))
-                        name = name.Remove(name.Length - 4);
+                        name = name.Remove(name.Length - 5);
                     //name = name.Substring(name.LastIndexOf('\\') + 1);
                 }
                 //if (!name.ToLower().StartsWith("menu."))

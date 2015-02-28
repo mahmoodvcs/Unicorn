@@ -148,7 +148,7 @@ namespace Unicorn.Web.Security
                 }
                 return roles.ToArray();
             }
-            catch (SqlException ex)
+            catch (UniSqlException ex)
             {
                 if (ex.Message.IndexOf("Invalid column name 'Title'") >= 0)
                 {
@@ -171,7 +171,7 @@ namespace Unicorn.Web.Security
         }
         public static void CreateRole(string roleName, string title, string options = null)
         {
-            Roles.CreateRole(roleName);
+            System.Web.Security.Roles.CreateRole(roleName);
             SetRoleTitle(roleName, title);
             SetRoleOptions(roleName, options);
         }

@@ -26,7 +26,6 @@ namespace Unicorn.Data
         private int scale;
         private byte precition;
         private int ordinalPosition;
-
         [NonSerialized]
         private TableInfo table;
 
@@ -75,6 +74,13 @@ namespace Unicorn.Data
                 if (dataType == value)
                     return;
                 dataType = value;
+                if (dataType == DbType.Decimal || dataType == DbType.Double || dataType == DbType.Single || dataType == DbType.Currency)
+                {
+                    if (length == 0)
+                        length = 18;
+                    if (precition == 0)
+                        precition = 2;
+                }
             }
         }
         public bool Nullable
@@ -159,15 +165,20 @@ namespace Unicorn.Data
             }
         }
         public object DefaultValue { get; set; }
+        /// <summary>
+        /// Used if DbType is Object. 
+        /// geography is only supported.
+        /// </summary>
+        public string TypeName { get; set; }
 
 
-        public string GetColumnDefinition(DatabaseType databaseType)
+        public string GetColumnDefinition(DatabaseType databaseType, bool isAlter=false)
         {
             string type = "";
             switch (databaseType)
             {
                 case DatabaseType.SQLServer:
-                    type += DbTypeUtility.GetSqlTypeNameFromDbType(dataType);
+                    type += DbTypeUtility.GetSqlTypeNameFromDbType(dataType, TypeName);
                     break;
                 case DatabaseType.Oracle:
                     type += DbTypeUtility.GetOracleTypeNameFromDbType(dataType);
@@ -206,7 +217,7 @@ namespace Unicorn.Data
             //Nullable
             def += (this.nullable ? " NULL" : " NOT NULL");
             //Default value
-            if (DefaultValue != null)
+            if (DefaultValue != null && !isAlter)
                 def += " DEFAULT(" + DefaultValue.ToString() + ")";
             //Identity
             if (this.isIdentity)

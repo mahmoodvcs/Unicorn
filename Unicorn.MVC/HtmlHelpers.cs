@@ -38,7 +38,32 @@ namespace Unicorn.MVC
                 foreach (var prop in htmlAttributes.GetType().GetProperties(
                     BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
                 {
-                    builder.Attributes[prop.Name] = prop.GetValue(htmlAttributes).ToString();
+                    builder.Attributes[prop.Name] = prop.GetValue(htmlAttributes, null).ToString();
+                }
+            return MvcHtmlString.Create(builder.ToString());
+        }
+        public static MvcHtmlString DropDownForEnum<EnumType>(this HtmlHelper html, string name, object htmlAttributes = null)
+        {
+            var type = typeof(EnumType);
+            if (!type.IsEnum)
+                throw new Exception("The member must be an Enum");
+            var builder = new TagBuilder("select");
+            builder.GenerateId(name);
+            builder.MergeAttribute("name", name);
+            foreach (var n in Enum.GetNames(type))
+            {
+                var title = TitleAttribute.GetTitle(type.GetField(n, BindingFlags.Public | BindingFlags.Static), n);
+                TagBuilder op = new TagBuilder("option");
+                var thisVal = (int)Enum.Parse(type, n);
+                op.Attributes["value"] = thisVal.ToString();
+                op.SetInnerText(title);
+                builder.InnerHtml += op.ToString();
+            }
+            if (htmlAttributes != null)
+                foreach (var prop in htmlAttributes.GetType().GetProperties(
+                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic))
+                {
+                    builder.Attributes[prop.Name] = prop.GetValue(htmlAttributes, null).ToString();
                 }
             return MvcHtmlString.Create(builder.ToString());
         }

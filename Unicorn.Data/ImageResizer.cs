@@ -237,5 +237,20 @@ namespace Unicorn
             grPhoto.Dispose();
             return bmPhoto;
         }
+        public static void GetMaxDimentions(Image img, ref int maxWidth, ref int maxHeight)
+        {
+            var ratio = maxWidth/(float)maxHeight;
+            var imgRatio = img.Width / (float)img.Height;
+            if (ratio > imgRatio)
+            {
+                var scale = maxHeight / (float)img.Height;
+                maxWidth = (int)(img.Width * scale);
+            }
+            else
+            {
+                var scale = maxWidth/ (float)img.Width;
+                maxHeight = (int)(img.Height * scale);
+            }
+        }
     }
 }

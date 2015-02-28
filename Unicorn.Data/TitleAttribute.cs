@@ -12,13 +12,13 @@ namespace Unicorn
 	{
 		public TitleAttribute(string title)
 		{
-			this.title = title;
+            this.Title = title;
 		}
-		private string title;
 
 		public string Title
 		{
-			get { return title; }
+            get;
+            private set;
 		}
 
         public static string GetTitle<EnumType>() where EnumType : struct, IConvertible
@@ -27,13 +27,17 @@ namespace Unicorn
 			return GetTitle(t, t.Name);
 		}
         public static string GetTitle<EnumType>(EnumType member) where EnumType : struct, IConvertible
-		{
+        {
             return GetTitle<EnumType>(member.ToString());
+        }
+        public static string GetTitle(Type enumType, string memberName)
+        {
+            return GetTitle(enumType.GetField(memberName, BindingFlags.Public | BindingFlags.Static), memberName, enumType);
         }
         public static string GetTitle<EnumType>(string memberName) where EnumType : struct, IConvertible
         {
             var t = typeof(EnumType);
-            return GetTitle(t.GetField(memberName, BindingFlags.Public | BindingFlags.Static), memberName, t);
+            return GetTitle(t, memberName);
         }
         public static string GetTitle(PropertyInfo typeMember)
         {

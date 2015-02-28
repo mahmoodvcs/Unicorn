@@ -259,6 +259,21 @@ namespace Unicorn.Data
                 }
                 else
                 {
+                    StringBuilder sb = new StringBuilder();
+                    string alterTable = "ALTER TABLE " + table.FullName + " ";
+
+                    //drop foreign keys
+                    dbTable.ForeignKeys.Load();
+                    var dbfks = dbTable.ForeignKeys.ToList();
+                    for (int i = 0; i < dbfks.Count; i++)
+                    {
+                        if(!table.ForeignKeys.Any(fk=>fk == dbfks[i]))
+                        {
+                            sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(dbfks[i].Name).Append(Environment.NewLine);
+                            dbfks.RemoveAt(i--);
+                        }
+                    }
+
                     List<ColumnInfo> alter = new List<ColumnInfo>();
                     List<ColumnInfo> add = new List<ColumnInfo>();
                     foreach (ColumnInfo column in table.Columns)
@@ -275,8 +290,6 @@ namespace Unicorn.Data
                         else if (column != dbColumn)
                             alter.Add(column);
                     }
-                    string alterTable = "ALTER TABLE " + table.FullName + " ";
-                    StringBuilder sb = new StringBuilder();
                     if (add.Count > 0)
                     {
                         sb.Append(alterTable).Append("ADD ");
@@ -292,9 +305,8 @@ namespace Unicorn.Data
                         sb.Append(Environment.NewLine);
                     }
                     foreach (ColumnInfo ci in alter)
-                        sb.Append(alterTable).Append("ALTER COLUMN ").Append(ci.GetColumnDefinition(dbType)).Append(Environment.NewLine);
+                        sb.Append(alterTable).Append("ALTER COLUMN ").Append(ci.GetColumnDefinition(dbType, true)).Append(Environment.NewLine);
 
-                    dbTable.ForeignKeys.Load();
                     foreach (ColumnInfo column in dbTable.Columns)
                     {
                         bool found = false;
@@ -309,36 +321,18 @@ namespace Unicorn.Data
                             string cn = GetDefaultConstraint(table.TableName, column.ColumnName);
                             if (cn != null)
                                 sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(cn).Append(Environment.NewLine);
-                            var fk = dbTable.ForeignKeys.FirstOrDefault(ff => ff.FKField == column.ColumnName);
+                            var fk = dbfks.FirstOrDefault(ff => ff.FKField == column.ColumnName);
                             if (fk != null)
                                 sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(fk.Name).Append(Environment.NewLine);
                             sb.Append(alterTable).Append("DROP COLUMN ").Append(column.ColumnName).Append(Environment.NewLine);
                         }
                     }
+                    //Add new foreign keys
                     List<ForeignKeyRelation> fks = new List<ForeignKeyRelation>();
                     foreach (var fk in table.ForeignKeys)
                     {
-                        bool found = false;
-                        foreach (ForeignKeyRelation dbfk in dbTable.ForeignKeys)
-                            if (fk == dbfk)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if (!found)
+                        if( !dbfks.Any(fkk=>fkk==fk))
                             fks.Add(fk);
-                    }
-                    foreach (ForeignKeyRelation dbfk in dbTable.ForeignKeys)
-                    {
-                        bool found = false;
-                        foreach (ForeignKeyRelation fk in table.ForeignKeys)
-                            if (fk == dbfk)
-                            {
-                                found = true;
-                                break;
-                            }
-                        if (!found)
-                            sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(dbfk.Name).Append(Environment.NewLine);
                     }
 
                     //try
