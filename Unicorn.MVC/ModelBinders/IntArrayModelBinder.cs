@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using System.Web.Mvc;
 
-namespace Unicorn.MVC.ModelBinders
+namespace Unicorn.Mvc.ModelBinders
 {
     public class IntArrayModelBinder : DefaultModelBinder
     {

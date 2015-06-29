@@ -7,16 +7,23 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using Unicorn.Web.Security.Authorization;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
     public sealed class AuthorizeActionAttribute : AuthorizeAttribute
     {
         public static string UnauthorizedRedirectAction { get; set; }
         public static string UnauthorizedRedirectController { get; set; }
+        public static string AdministratorRoles { get; set; }
         public AuthorizeActionAttribute(string action)
         {
             this.action = action;
+            if (!string.IsNullOrEmpty(AdministratorRoles))
+                if (string.IsNullOrEmpty(base.Roles))
+                    base.Roles = AdministratorRoles;
+                else
+                    base.Roles += "," + AdministratorRoles;
+
         }
         string action;
 

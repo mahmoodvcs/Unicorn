@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using System.Runtime.Serialization.Json;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     public class JsonDataContractActionResult : JsonResult
     {

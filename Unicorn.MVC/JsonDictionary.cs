@@ -5,7 +5,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Runtime.Serialization;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     [Serializable]
     public class JsonDictionary<K, V> : IEnumerable<KeyValuePair<K, V>>, ISerializable, ICollection, IEnumerable

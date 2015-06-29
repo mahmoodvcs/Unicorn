@@ -6,8 +6,9 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
+using Unicorn.Mvc.Controllers;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     public static class HtmlHelpers
     {
@@ -88,5 +89,28 @@ namespace Unicorn.MVC
             return memberExpression.Member;
         }
 
+
+        public static MvcHtmlString UIMessages(this HtmlHelper html)
+        {
+            if (html.ViewContext.TempData["Unicorn.Message"] == null)
+                return null;
+            UIMessage msg = html.ViewContext.TempData["Unicorn.Message"] as UIMessage;
+            if (msg == null)
+                return null;
+            TagBuilder div = new TagBuilder("div");
+            div.AddCssClass("alert");
+            div.AddCssClass("alert-" + msg.Type.ToString().ToLower());
+            if (msg.Closable)
+            {
+                div.AddCssClass("alert-dismissible");
+                div.InnerHtml =@"<button type='button' class='close' data-dismiss='alert'>
+            <span aria-hidden='true'>&times;</span><span class='sr-only'>Close</span>
+        </button>";
+            }
+            div.Attributes["role"] = "alert";
+            div.InnerHtml += msg.Message;
+            return new MvcHtmlString(div.ToString());
+        }
+    
     }
 }

@@ -91,6 +91,14 @@ namespace Unicorn.Data
             ti.tableType = (string)row["table_type"];
             return ti;
         }
+        internal static TableInfo FromSqlSPTables(object[] row)
+        {
+            TableInfo ti = new TableInfo();
+            ti.tableName = (string)row[2];
+            ti.tableOwner = (string)row[1];
+            ti.tableType = (string)row[3];
+            return ti;
+        }
 
         internal static TableInfo FromOracleSchemaRow(DataRow row)
         {

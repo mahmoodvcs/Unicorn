@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
-namespace Unicorn.MVC.ModelBinders
+namespace Unicorn.Mvc.ModelBinders
 {
     public class MyByteArrayModelBinder : System.Web.Mvc.ByteArrayModelBinder
     {

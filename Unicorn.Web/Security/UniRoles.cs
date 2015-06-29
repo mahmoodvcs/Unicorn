@@ -14,7 +14,7 @@ namespace Unicorn.Web.Security
     {
         public static string GetRoleTitle(string roleName)
         {
-            var dr = SqlHelper.ExecuteReader("select * from aspnet_Roles where LoweredRoleName=@r", SqlHelper.CreateParameter("@r", roleName));
+            var dr = SqlHelper.ExecuteReader("select * from " + Authorization.AuthorizationManager.rolesTableName + " where RoleName=@r", SqlHelper.CreateParameter("@r", roleName));
             bool b = dr.Read();
             if (!b)
             {
@@ -39,7 +39,7 @@ namespace Unicorn.Web.Security
         }
         public static string GetRoleOptions(string roleName)
         {
-            var dr = SqlHelper.ExecuteReader("select * from aspnet_Roles where LoweredRoleName=@r", SqlHelper.CreateParameter("@r", roleName));
+            var dr = SqlHelper.ExecuteReader("select * from " + Authorization.AuthorizationManager.rolesTableName + " where RoleName=@r", SqlHelper.CreateParameter("@r", roleName));
             bool b = dr.Read();
             if (!b)
             {
@@ -66,22 +66,22 @@ namespace Unicorn.Web.Security
         {
             try
             {
-                SqlHelper.ExecuteNonQuery("alter table aspnet_Roles add Title nvarchar(256) NULL");
+                SqlHelper.ExecuteNonQuery("alter table " + Authorization.AuthorizationManager.rolesTableName + " add Title nvarchar(256) NULL");
             }
             catch (Exception ex)
             {
-                throw new Exception("Column 'Title' does not exit in table 'aspnet_Roles' and cannot be created.", ex);
+                throw new Exception("Column 'Title' does not exit in table '" + Authorization.AuthorizationManager.rolesTableName + "' and cannot be created.", ex);
             }
         }
         private static void AddOptionsColumn()
         {
             try
             {
-                SqlHelper.ExecuteNonQuery("alter table aspnet_Roles add Options nvarchar(MAX) NULL");
+                SqlHelper.ExecuteNonQuery("alter table " +Authorization.AuthorizationManager.rolesTableName + " add Options nvarchar(MAX) NULL");
             }
             catch (Exception ex)
             {
-                throw new Exception("Column 'Options' does not exit in table 'aspnet_Roles' and cannot be created.", ex);
+                throw new Exception("Column 'Options' does not exit in table '" + Authorization.AuthorizationManager.rolesTableName + "' and cannot be created.", ex);
             }
         }
 
@@ -89,7 +89,7 @@ namespace Unicorn.Web.Security
         {
             try
             {
-                SqlHelper.ExecuteNonQuery("update aspnet_Roles set Title=@t where LoweredRoleName=@r",
+                SqlHelper.ExecuteNonQuery("update " + Authorization.AuthorizationManager.rolesTableName + " set Title=@t where RoleName=@r",
                     SqlHelper.CreateParameter("@t", title),
                     SqlHelper.CreateParameter("@r", roleName.ToLower()));
             }
@@ -109,10 +109,10 @@ namespace Unicorn.Web.Security
             try
             {
                 if (options == null)
-                    SqlHelper.ExecuteNonQuery("update aspnet_Roles set Options=NULL where LoweredRoleName=@r",
+                    SqlHelper.ExecuteNonQuery("update " + Authorization.AuthorizationManager.rolesTableName + " set Options=NULL where RoleName=@r",
                         SqlHelper.CreateParameter("@r", roleName.ToLower()));
                 else
-                    SqlHelper.ExecuteNonQuery("update aspnet_Roles set Options=@t where LoweredRoleName=@r",
+                    SqlHelper.ExecuteNonQuery("update " + Authorization.AuthorizationManager.rolesTableName + " set Options=@t where RoleName=@r",
                         SqlHelper.CreateParameter("@t", options),
                         SqlHelper.CreateParameter("@r", roleName.ToLower()));
             }
@@ -133,7 +133,7 @@ namespace Unicorn.Web.Security
             DataReader dr = null;
             try
             {
-                dr = SqlHelper.ExecuteReader("select RoleName, Title, Options from aspnet_Roles");
+                dr = SqlHelper.ExecuteReader("select RoleName, Title, Options from " + Authorization.AuthorizationManager.rolesTableName);
                 NameValueCollection col = new NameValueCollection();
                 while (dr.Read())
                 {

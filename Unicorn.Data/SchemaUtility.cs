@@ -85,23 +85,46 @@ namespace Unicorn.Data
                 throw new ArgumentException("Parameter 'tableName' is not specified.");
             //not using ConnectionManager.instance.Connection becausse acourding to MSDN:
             //If the connection is associated with a transaction, executing GetSchema calls may cause some providers to throw an exception.
-            DbConnection connection = ConnectionManager.DbProviderFactory.CreateConnection();
-            connection.ConnectionString = ConnectionManager.ConnectionString;
-            connection.Open();
+            //using (var tr = new TransactionScope()) { 
+            DbConnection connection = ConnectionManager.Instance.GetConnection();// DbProviderFactory.CreateConnection();
+            //connection.ConnectionString = ConnectionManager.ConnectionString;
+            //connection.Open();
             TableInfo table = null;
-            if (connection is SqlConnection || connection is OleDbConnection)
+            if (connection is SqlConnection)
+            {
+                var s = "exec sp_tables @table_name=@t";
+                if (tableOwner != null)
+                    s += ", @table_owner=@o";
+                //SqlCommand cmd = (SqlCommand)connection.CreateCommand();
+                SqlCommand cmd = new SqlCommand(s, (SqlConnection)connection);
+                cmd.Transaction = (SqlTransaction)ConnectionManager.Instance.Transaction;
+                
+                cmd.Parameters.Add(new SqlParameter("@t", tableName));
+                if (tableOwner != null)
+                    cmd.Parameters.Add(new SqlParameter("@o", tableOwner));
+                //"@table_name='" + tableName + "', @table_owner='" + tableOwner + "'"
+                var dr = cmd.ExecuteReader();
+                object[] vals = new object[dr.FieldCount];
+                if (dr.Read())
+                {
+                    dr.GetValues(vals);
+                    table = TableInfo.FromSqlSPTables(vals);
+                }
+                dr.Close();
+            }
+            else if (connection is OleDbConnection)
             {
                 //SetTransactionIsolationLevel(connection);
                 DataTable dt = connection.GetSchema("Tables", new string[] { null, tableOwner, tableName });
                 if (dt.Rows.Count > 0)
                 {
-                    if (connection is SqlConnection)
-                        table = TableInfo.FromSqlSchemaRow(dt.Rows[0]);
-                    else if (connection is OleDbConnection)
-                        table = TableInfo.FromOleDbSchemaRow(dt.Rows[0]);
+                    //if (connection is SqlConnection)
+                    //    table = TableInfo.FromSqlSchemaRow(dt.Rows[0]);
+                    //else if (connection is OleDbConnection)
+                    table = TableInfo.FromOleDbSchemaRow(dt.Rows[0]);
                 }
-                else
-                    return null;
+                //else
+                //    return null;
                 //throw new Exception(string.Format("Table '{0}.{1}' does not exist.", tableOwner, tableName));
             }
             else if (connection is OracleConnection)
@@ -119,17 +142,19 @@ namespace Unicorn.Data
                     throw new Exception(string.Format("Table '{0}.{1}' does not exist.", tableOwner, tableName));
                 }
             }
-            ReadTableColumns(connection, table);
+            if (table != null)
+                ReadTableColumns(connection, table);
             //Helper.CloseConnection(connection, close);
             //ConnectionManager.Instance.ReleaseConnection();
-            connection.Close();
+            ConnectionManager.Instance.ReleaseConnection();
+            //connection.Close();
             return table;
         }
 
         private static void SetTransactionIsolationLevel(DbConnection connection)
         {
             var cmd = connection.CreateCommand();
-            cmd.CommandText="set transaction isolation level read uncommitted";
+            cmd.CommandText = "set transaction isolation level read uncommitted";
             cmd.ExecuteNonQuery();
         }
 
@@ -145,6 +170,7 @@ namespace Unicorn.Data
             if (connection is SqlConnection)
             {
                 SqlCommand cmd = new SqlCommand("sp_columns", (SqlConnection)connection);
+                cmd.Transaction = (SqlTransaction)ConnectionManager.Instance.Transaction;
                 cmd.CommandType = CommandType.StoredProcedure;
                 cmd.Parameters.Add(new SqlParameter("@table_name", table.TableName));
                 if (!string.IsNullOrEmpty(table.TableOwner))
@@ -267,7 +293,7 @@ namespace Unicorn.Data
                     var dbfks = dbTable.ForeignKeys.ToList();
                     for (int i = 0; i < dbfks.Count; i++)
                     {
-                        if(!table.ForeignKeys.Any(fk=>fk == dbfks[i]))
+                        if (!table.ForeignKeys.Any(fk => fk == dbfks[i]))
                         {
                             sb.Append(alterTable).Append("DROP CONSTRAINT ").Append(dbfks[i].Name).Append(Environment.NewLine);
                             dbfks.RemoveAt(i--);
@@ -331,7 +357,7 @@ namespace Unicorn.Data
                     List<ForeignKeyRelation> fks = new List<ForeignKeyRelation>();
                     foreach (var fk in table.ForeignKeys)
                     {
-                        if( !dbfks.Any(fkk=>fkk==fk))
+                        if (!dbfks.Any(fkk => fkk == fk))
                             fks.Add(fk);
                     }
 

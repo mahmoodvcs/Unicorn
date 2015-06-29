@@ -32,10 +32,10 @@ namespace Unicorn
             ms.Dispose();
             return img;
         }
-        public static byte[] GetBytes(Image img)
+        public static byte[] GetBytes(Image img, ImageFormat format = null)
         {
             MemoryStream ms = new MemoryStream();
-            img.Save(ms, ImageFormat.Jpeg);
+            img.Save(ms, format ?? ImageFormat.Jpeg);
             byte[] bs = ms.ToArray();
             ms.Close();
             ms.Dispose();
@@ -239,7 +239,7 @@ namespace Unicorn
         }
         public static void GetMaxDimentions(Image img, ref int maxWidth, ref int maxHeight)
         {
-            var ratio = maxWidth/(float)maxHeight;
+            var ratio = maxWidth / (float)maxHeight;
             var imgRatio = img.Width / (float)img.Height;
             if (ratio > imgRatio)
             {
@@ -248,7 +248,7 @@ namespace Unicorn
             }
             else
             {
-                var scale = maxWidth/ (float)img.Width;
+                var scale = maxWidth / (float)img.Width;
                 maxHeight = (int)(img.Height * scale);
             }
         }

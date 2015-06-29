@@ -52,7 +52,7 @@ namespace Unicorn.Web.Security.Authorization
 ");
             }
         }
-        static readonly string rolesTableName, usersTableName//, userRolesTabeName, 
+        internal static readonly string rolesTableName, usersTableName//, userRolesTabeName, 
             , userRoleActionsTableName;
         private static AuthorizedAction actions;
         public static AuthorizedAction Actions

@@ -367,6 +367,8 @@ namespace Unicorn.Data
         {
             get
             {
+            	if(Table == null)
+            		return null;
                 foreach (var f in Table.ForeignKeys)
                 {
                     if (f.FKField == columnName)

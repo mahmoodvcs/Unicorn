@@ -845,8 +845,9 @@ Set FmtOnly  Off";
 
         public static string GetDatabaseName()
         {
-            return ConnectionManager.Instance.GetConnection().Database;
+            var name = ConnectionManager.Instance.GetConnection().Database;
             ConnectionManager.Instance.ReleaseConnection();
+            return name;
         }
 
         public static int? GetColumnLength(string fieldName, string tableName)

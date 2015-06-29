@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     public static class MVCHelpers
     {

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Security;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     public class AutoUnlockMembershipProvider : System.Web.Providers.DefaultMembershipProvider
     {

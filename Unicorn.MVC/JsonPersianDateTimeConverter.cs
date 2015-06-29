@@ -4,7 +4,7 @@ using System.Linq;
 using System.Web;
 using Unicorn.Web;
 
-namespace Unicorn.MVC
+namespace Unicorn.Mvc
 {
     public class JsonPersianDateTimeConverter : Newtonsoft.Json.Converters.DateTimeConverterBase
     {
@@ -19,10 +19,12 @@ namespace Unicorn.MVC
         }
         public override bool CanConvert(Type objectType)
         {
-            return (objectType == typeof(DateTime));
+            return (objectType == typeof(DateTime) || objectType == typeof(DateTime?));
         }
         public override void WriteJson(Newtonsoft.Json.JsonWriter writer, object value, Newtonsoft.Json.JsonSerializer serializer)
         {
+            if (value == null)
+                return;
             var dt = (Unicorn.PersianDateTime)(DateTime)value;
             string val;
             if (ConvertTime)
@@ -35,7 +37,12 @@ namespace Unicorn.MVC
         }
         public override object ReadJson(Newtonsoft.Json.JsonReader reader, Type objectType, object existingValue, Newtonsoft.Json.JsonSerializer serializer)
         {
-            return Unicorn.PersianDateTimeConverter.ShamsiToMiladi(Unicorn.PersianDateTime.Parse(reader.Value.ToString()));
+            if (reader.Value == null)
+                return null;
+            var v = reader.Value.ToString().Trim();
+            if ( v == "")
+                return null;
+            return Unicorn.PersianDateTimeConverter.ShamsiToMiladi(Unicorn.PersianDateTime.Parse(v));
         }
     }
 }

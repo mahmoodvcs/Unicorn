@@ -243,7 +243,6 @@ namespace Unicorn.Data
                 case DbType.VarNumeric:
                 case DbType.Currency:
                     return "decimal";
-                    break;
                 case DbType.Double:
                     return "float";
                 case DbType.Int32:
