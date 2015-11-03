@@ -11,6 +11,7 @@ namespace Unicorn.Mvc.Controllers
 {
     public class Unicorn_ResourceController : Controller
     {
+        [OutputCache(VaryByParam = "r,a", Location = System.Web.UI.OutputCacheLocation.ServerAndClient, Duration = 3600 * 24 * 365)]
         public FileResult Index(string r, string a)
         {
             Assembly ase;

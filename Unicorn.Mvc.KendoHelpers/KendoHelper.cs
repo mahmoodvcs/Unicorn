@@ -172,13 +172,29 @@ namespace Unicorn.Mvc.KendoHelpers
             return s;
         }
 
-        public static void ReplaceName(this DataSourceRequest req, string oldName, string newName)
+        public static void ReplaceName(this DataSourceRequest req, string oldName, string newName,
+            Dictionary<object, object> valuMap = null)
         {
             foreach (var f in req.Sorts)
             {
                 if (f.Member == oldName)
                     f.Member = newName;
             }
+            foreach (var f in req.Filters)
+            {
+                foreach (var fd in f.GetFilterDescriptors())
+                    if (fd.Member == oldName)
+                    {
+                        fd.Member = newName;
+                        if(valuMap != null)
+                        {
+                            object o;
+                            if (valuMap.TryGetValue(fd.Value, out o))
+                                fd.Value = o;
+                        }
+                    }
+            }
+
         }
         public static void ReplaceNames(this DataSourceRequest req, Dictionary<string, string> map)
         {

@@ -6,3 +6,4 @@ Unicorn.Web/bin/
 bin/
 *.suo
 Unicorn.MVC/obj/
+obj/

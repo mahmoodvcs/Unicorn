@@ -27,14 +27,17 @@ namespace Unicorn.Mvc.ModelBinders
 
         private object BindCsv(Type type, string name, ModelBindingContext bindingContext)
         {
-            if (type.GetInterface(typeof(IEnumerable).Name) != null)
+            if (type != typeof(string) && type.GetInterface(typeof(IEnumerable).Name) != null)
             {
                 var actualValue = bindingContext.ValueProvider.GetValue(name);
 
                 if (actualValue != null)
                 {
                     var valueType = type.GetElementType() ?? type.GetGenericArguments().FirstOrDefault();
-
+                    if (valueType == typeof(byte))//skip byte[] (file upload)
+                        return null;
+                    if (actualValue.AttemptedValue.StartsWith("["))
+                        return Newtonsoft.Json.JsonConvert.DeserializeObject(actualValue.AttemptedValue, type);
                     if (valueType != null && valueType.GetInterface(typeof(IConvertible).Name) != null)
                     {
                         var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(valueType));

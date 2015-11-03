@@ -18,18 +18,33 @@ namespace Unicorn.Mvc
             public string Name { get; set; }
             public string ScriptPath { get; set; }
             public bool HasScript { get; set; }
+            public int DuplicateIndex { get; set; }
+            public string UniqueName 
+            {
+                get
+                {
+                    if (DuplicateIndex > 0)
+                        return Name + DuplicateIndex.ToString();
+                    return Name;
+                }
+            }
         }
 
         public static MvcHtmlString AngularView(this HtmlHelper html, string viewName, string scriptPath = null, bool hasScript = true)
         {
             List<AngularViewInfo> views = (List<AngularViewInfo>)(html.ViewContext.TempData["angularViews"] ?? new List<AngularViewInfo>());
             html.ViewContext.TempData["angularViews"] = views;
-            views.Add(new AngularViewInfo()
+            var dupIndex = views.Where(v => v.Name == viewName).Max(v => (int?)v.DuplicateIndex);
+
+            var view = new AngularViewInfo()
             {
                 Name = viewName,
                 ScriptPath = scriptPath,
                 HasScript = hasScript
-            });
+            };
+            views.Add(view);
+            if (dupIndex > 0)
+                view.DuplicateIndex = dupIndex.Value + 1;
             //var s = ReadFile("~/app/" + viewName + ".html");
             //return new MvcHtmlString(s);
             return new MvcHtmlString("<div class='angularViewPlace' data-view='" + viewName + "'></div>");
@@ -52,7 +67,8 @@ namespace Unicorn.Mvc
             if (views != null)
             {
                 sb.Append("<script src='")
-                    .Append(url.Content("~/Unicorn_Resource?a=Unicorn.Mvc&r=Unicorn.Mvc.js.angularHelper.js"))
+                    .Append(url.Content("~/Unicorn_Resource?a=Unicorn.Mvc&r=Unicorn.Mvc.js.angularHelper.js&"))
+                    .Append(File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location).Ticks.ToString())
                     .Append("'></script>\r\n");
 
                 if (!basePath.EndsWith("/"))
@@ -60,7 +76,9 @@ namespace Unicorn.Mvc
                 foreach (var v in views)
                 {
                     if (v.HasScript)
-                        sb.Append("<script src='").Append(url.Content(basePath + (v.ScriptPath ?? v.Name) + ".js")).Append("'></script>\r\n");
+                        sb.Append("<script src='").Append(url.Content(basePath + (v.ScriptPath ?? v.Name) + ".js?"))
+                            .Append(AppVersion)
+                            .Append("'></script>\r\n");
                 }
             }
             return new MvcHtmlString(sb.ToString());

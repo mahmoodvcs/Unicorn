@@ -43,7 +43,7 @@ namespace Unicorn.Mvc
                 }
             return MvcHtmlString.Create(builder.ToString());
         }
-        public static MvcHtmlString DropDownForEnum<EnumType>(this HtmlHelper html, string name, object htmlAttributes = null)
+        public static MvcHtmlString DropDownForEnum<EnumType>(this HtmlHelper html, string name, EnumType? value, object htmlAttributes = null) where EnumType:struct
         {
             var type = typeof(EnumType);
             if (!type.IsEnum)
@@ -57,6 +57,8 @@ namespace Unicorn.Mvc
                 TagBuilder op = new TagBuilder("option");
                 var thisVal = (int)Enum.Parse(type, n);
                 op.Attributes["value"] = thisVal.ToString();
+                //if (value != null && (int)value.Value == thisVal)
+                  //  op.Attributes["selected"] = "selected";
                 op.SetInnerText(title);
                 builder.InnerHtml += op.ToString();
             }

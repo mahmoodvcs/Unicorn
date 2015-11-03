@@ -103,7 +103,43 @@ namespace Unicorn.Web.Security.Authorization
             RegisterAction(ac, actionsEnumType, onlyAddChilds);
             return ac;
         }
-        public static AuthorizedAction RegisterAction(AuthorizedAction parentAction, Type actionsEnumType, bool onlyAddChilds=false)
+        public static AuthorizedAction GetEnumActions<EnumType>(AuthorizedAction addChildsToThis = null)
+        {
+            var t = typeof(EnumType);
+            AuthorizedAction enumAction;
+            if (addChildsToThis == null)
+            {
+                enumAction = new AuthorizedAction(t.Name);
+                enumAction.Title = GetTitle(t, t.Name);
+            }
+            else
+                enumAction = addChildsToThis;
+            FieldInfo[] fields = t.GetFields(BindingFlags.Static | BindingFlags.Public);
+            foreach (FieldInfo fi in fields)
+            {
+                if (fi.Name.Contains("_"))
+                {
+                    var acs = fi.Name.Split('_');
+                    string title = GetTitle(fi, fi.Name);
+                    var tis = title.Split('.');
+                    var ac = enumAction;
+                    for (int i = 0; i < acs.Length; i++)
+                    {
+                        ac = ac.AddSubAction(acs[i]);
+                        ac.Title = tis[i];
+                    }
+                }
+                else
+                {
+                    AuthorizedAction ac = enumAction.AddSubAction(fi.Name);
+                    ac.Title = GetTitle(fi, fi.Name);
+                }
+            }
+            return enumAction;
+
+        }
+        //TODO: remove duplicate code: GetEnumActions
+        public static AuthorizedAction RegisterAction(AuthorizedAction parentAction, Type actionsEnumType, bool onlyAddChilds = false)
         {
             if (!actionsEnumType.IsEnum)
                 throw new ArgumentException("پارامتر بايد از نوع شمارشي باشد.", "actionsEnumType");
@@ -116,7 +152,7 @@ namespace Unicorn.Web.Security.Authorization
                 enumAction.Title = GetTitle(actionsEnumType, enumAction.Name);
                 parentAction.SubActions.Add(enumAction);
             }
-            
+
             FieldInfo[] fields = actionsEnumType.GetFields(BindingFlags.Static | BindingFlags.Public);
             foreach (FieldInfo fi in fields)
             {

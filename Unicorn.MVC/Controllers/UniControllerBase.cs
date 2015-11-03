@@ -73,5 +73,10 @@ namespace Unicorn.Mvc.Controllers
             //ViewBag.Message = m;
             TempData["Unicorn.Message"] = m;
         }
+        protected bool ViewExists(string name)
+        {
+            ViewEngineResult result = ViewEngines.Engines.FindView(ControllerContext, name, null);
+            return (result.View != null);
+        }
     }
 }

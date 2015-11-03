@@ -9,12 +9,9 @@ namespace Unicorn.Mvc
     {
         Success,
         Info,
-        Danger,
         Warning,
+        Danger,
         Error = Danger,
-        Green = Success,
-        Yellow = Warning,
-        Red = Danger
     }
     public class UIMessage
     {

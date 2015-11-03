@@ -87,14 +87,19 @@ namespace Unicorn.Data
             this.tableName = tableName;
         }
 
-        public Record Insert(bool isIdentityInsertOn)
+        public Record Insert(out int identityValue)
         {
             //try
             //{
             string strInsert = GetInsertCommand();
-            if (isIdentityInsertOn)
-                AddAllowIdentityInsertToCommand(ref strInsert);
+            //if (isIdentityInsertOn)
+            //    AddAllowIdentityInsertToCommand(ref strInsert);
             SqlHelper.ExecuteNonQuery(strInsert, GetParameters(fields));
+            var id = GetIdentityValue();
+            if (id.HasValue)
+                identityValue = id.Value;
+            else
+                identityValue = 0;
             //}
             //catch
             //{
@@ -105,10 +110,19 @@ namespace Unicorn.Data
 
             return ReturnNew();
         }
+        public static int? GetIdentityValue()
+        {
+            var o = SqlHelper.ExecuteScaler("select @@IDENTITY");
+            if (o == null)
+                return null;
+            return int.Parse(o.ToString());
+        }
+
 
         public Record Insert()
         {
-            return Insert(false);
+            int id;
+            return Insert(out id);
         }
 
         public Record Update()

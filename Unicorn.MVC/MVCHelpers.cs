@@ -16,5 +16,13 @@ namespace Unicorn.Mvc
                new HttpContextWrapper(HttpContext.Current), new System.Web.Routing.RouteData());
             return new System.Web.Mvc.UrlHelper(requestContext);
         }
+        public static void ClearErrors(this ModelStateDictionary modelState, params string[] fields)
+        {
+            foreach (var f in fields)
+            {
+                if (modelState.ContainsKey(f) && modelState[f].Errors.Count > 0)
+                    modelState[f].Errors.Clear();
+            }
+        }
     }
 }
