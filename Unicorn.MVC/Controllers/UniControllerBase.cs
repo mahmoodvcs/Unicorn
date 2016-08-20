@@ -14,7 +14,9 @@ namespace Unicorn.Mvc.Controllers
             //logger = DependencyResolver.Current.GetService<ILogger>();// new SqlLogger();
             JsonDateConvertSetting = JsonDateConvertSetting.PersianDate;
             //traceLog = NLog.LogManager.GetCurrentClassLogger();
+            UseNativeJsonSerializer = false;
         }
+        public bool UseNativeJsonSerializer { get; set; }
         //public ControllerBase(ILogger logger)
         //{
         //    JsonDateConvertSetting = JsonDateConvertSetting.PersianDate;
@@ -26,9 +28,9 @@ namespace Unicorn.Mvc.Controllers
         public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
         public string UserName
         {
-            get { return User == null ? null : User.Identity.Name; }
+            get { return User == null || !User.Identity.IsAuthenticated? null : User.Identity.Name; }
         }
-        public virtual JsonResult JsonContract(Object data)
+        public virtual JsonResult JsonContract(object data)
         {
             return new JsonDataContractActionResult(data);
         }
@@ -40,13 +42,16 @@ namespace Unicorn.Mvc.Controllers
         protected override JsonResult Json(object data, string contentType,
             Encoding contentEncoding, JsonRequestBehavior behavior)
         {
-            return new JsonNetResult(JsonDateConvertSetting)
-            {
-                Data = data,
-                ContentType = contentType,
-                ContentEncoding = contentEncoding,
-                JsonRequestBehavior = behavior
-            };
+            if (UseNativeJsonSerializer)
+                return base.Json(data, contentType, contentEncoding, behavior);
+            else
+                return new JsonNetResult(JsonDateConvertSetting)
+                {
+                    Data = data,
+                    ContentType = contentType,
+                    ContentEncoding = contentEncoding,
+                    JsonRequestBehavior = behavior
+                };
         }
 
         //public virtual JsonResult Error(Exception ex)
@@ -56,7 +61,7 @@ namespace Unicorn.Mvc.Controllers
         //}
         public virtual JsonResult Error(string msg)
         {
-            return Json(new { ok = false, message = msg });
+            return Json(new { ok = false, message = msg }, JsonRequestBehavior.AllowGet);
         }
         public virtual JsonResult OK()
         {

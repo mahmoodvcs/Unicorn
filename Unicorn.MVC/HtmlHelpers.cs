@@ -76,7 +76,7 @@ namespace Unicorn.Mvc
             var value = meta.Model;
             return value;
         }
-        private static string MemberName<T, V>(this Expression<Func<T, V>> expression)
+        public static string MemberName<T, V>(this Expression<Func<T, V>> expression)
         {
             var memberExpression = expression.Body as MemberExpression;
             if (memberExpression == null)

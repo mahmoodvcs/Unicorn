@@ -10,7 +10,7 @@ namespace Unicorn.Mvc.KendoHelpers
 {
     public static class KendoGridExtentions
     {
-        public static GridBuilder<T> DoConfig<T>(this GridBuilder<T> g)  where T:class
+        public static GridBuilder<T> DoConfig<T>(this GridBuilder<T> g) where T : class
         {
             g.Pageable(pg => pg.Localize()).Filterable(f => f.Localize());
             //g.DataSource(ds =>
@@ -19,50 +19,62 @@ namespace Unicorn.Mvc.KendoHelpers
             //});
             return g;
         }
-        public static void Localize(this PageableBuilder pg)
+        public static GridBoundColumnBuilder<T> AsNumber<T>(this GridBoundColumnBuilder<T> col)
+             where T : class
         {
-            pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
+            return col.ClientTemplate("<span class='number'>#=kendo.toString(" + col.Column.Member + ",'n0')#</span>");
         }
-        public static void Localize(this PageableMessagesBuilder msg)
+        public static GridBoundColumnBuilder<T> AddfooterAggregate<T>(this GridBoundColumnBuilder<T> col,string aggregate)
+            where T : class
         {
-            msg.First("").Last("").Previous("").Next("")
+            return col.ClientFooterTemplate("سود: <span class='number'>#=kendo.toString(" + aggregate + ",'n0')#</span>"); ;
+        }
+        public static PageableBuilder Localize(this PageableBuilder pg)
+        {
+             return pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
+        }
+        public static PageableMessagesBuilder Localize(this PageableMessagesBuilder msg)
+        {
+            return msg.First("").Last("").Previous("").Next("")
                 .Display("سطر {0} تا {1} از {2} سطر".Localize()).Page("صفحه".Localize()).Of("از".Localize())
                 .ItemsPerPage("تعداد سطرها در صفحه".Localize());
         }
-        public static void Localize(this GridFilterableSettingsBuilder f)
+        public static GridFilterableSettingsBuilder Localize(this GridFilterableSettingsBuilder f)
         {
-            f.Messages(m => m.Localize()).Operators(op => op.Localize());
+            return f.Messages(m => m.Localize()).Operators(op => op.Localize());
         }
-        public static void Localize(this FilterableOperatorsBuilder op)
+        public static FilterableOperatorsBuilder Localize(this FilterableOperatorsBuilder op)
         {
-            op.ForNumber(fn=>fn.IsEqualTo("برایر با").IsGreaterThan("بزرگتر از").IsGreaterThanOrEqualTo("بزرگتر یا مساوی با")
+            op.ForNumber(fn => fn.IsEqualTo("برایر با").IsGreaterThan("بزرگتر از").IsGreaterThanOrEqualTo("بزرگتر یا مساوی با")
                 .IsLessThan("کوچکتر از").IsLessThanOrEqualTo("کوچکتر یا مساوی با").IsNotEqualTo("مخالف با")
-                ).ForString(s=>
+                ).ForString(s =>
                 s.Contains("شامل ... باشد").DoesNotContain("شامل ... نباشد").EndsWith("با ... خاتمه یابد")
                 .IsEqualTo("برابر با").IsNotEqualTo("مخالف با").StartsWith("با ... شروع شود")
                 );
+            return op;
         }
         public static void Localize(this FilterableMessagesBuilder msg)
         {
-            msg.And("و").Cancel("لغو").Clear("حذف فیلتر").Filter("شرط").Info("")
-                .Or("یا").SelectValue("انتخاب مقدار").Value("مقدار");
+            msg.And("و").Cancel("لغو").Clear("حذف فیلتر").Filter("فیلتر").Info("")
+                .Or("یا").SelectValue("انتخاب مقدار").Value("مقدار").IsTrue("بله").IsFalse("خیر");
         }
         public static void AddCreateLocalize<T>(this GridToolBarCommandFactory<T> c) where T : class
         {
             c.Create().Text("جدید".Localize());
         }
-        public static void Localize<T>(this GridActionCommandFactory<T> c, bool hasEdit = true, bool hasDelete = true) where T : class
+        public static GridActionCommandFactory<T> Localize<T>(this GridActionCommandFactory<T> c, bool hasEdit = true, bool hasDelete = true) where T : class
         {
             if (hasEdit)
                 c.Edit().Text("ویرایش".Localize()).UpdateText("ذخیره".Localize()).CancelText("لغو".Localize());
             if (hasDelete)
                 c.Destroy().Text("حذف".Localize());
+            return c;
         }
         public static string Localize(this string s)
         {
             return s;
         }
- 
+
         //public static GridTemplateColumnBuilder<TModel> BoundDate<TValue>(this GridColumnFactory<TModel> cols,
         //    Expression<Func<TModel, TValue>> expression)
         //{

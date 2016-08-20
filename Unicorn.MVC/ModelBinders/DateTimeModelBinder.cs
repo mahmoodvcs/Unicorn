@@ -24,6 +24,8 @@ namespace Unicorn.Mvc.ModelBinders
                 s = ((string[])value)[0];
             else
                 s = value.ToString();
+            if (string.IsNullOrEmpty(s))
+                return null;
             long l;
             if (long.TryParse(s, out l))
                 return new DateTime(1970, 01, 01).AddMilliseconds(l).ToLocalTime();//Convert from javascript Date.getTime()

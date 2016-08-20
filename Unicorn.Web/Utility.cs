@@ -76,6 +76,8 @@ namespace Unicorn.Web
                 bool hasAccess = HasSiteMapNodeAccess(parentAction, roles,HttpContext.Current.User, node, out action, out shouldReturn);
                 if (shouldReturn)
                     return;
+                if (node.Attributes["dontShow"] != null)
+                    continue;
                 object menuItem = CreateMenuIem(node, itemType);
                 PropertyInfo childItemsProp = itemType.GetProperty("Items");
                 if (childItemsProp == null)

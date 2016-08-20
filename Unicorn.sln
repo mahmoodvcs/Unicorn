@@ -1,13 +1,15 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25123.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Web", "Unicorn.Web\Unicorn.Web.csproj", "{12C9FAD7-31F2-45AB-B1DD-0760236EA7A0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Data", "Unicorn.Data\Unicorn.Data.csproj", "{6FE39701-A44E-4F7E-9F31-52526D877281}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.MVC", "Unicorn.MVC\Unicorn.MVC.csproj", "{55F321DE-1E41-40BA-957B-6EC7A635CC8D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Mvc.KendoHelpers", "Unicorn.Mvc.KendoHelpers\Unicorn.Mvc.KendoHelpers.csproj", "{4010E4F7-234A-4302-9367-D21AC29E2DE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +29,10 @@ Global
 		{55F321DE-1E41-40BA-957B-6EC7A635CC8D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55F321DE-1E41-40BA-957B-6EC7A635CC8D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55F321DE-1E41-40BA-957B-6EC7A635CC8D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -7,6 +7,9 @@ using System.Web;
 using System.Web.Mvc;
 using System.Data.Entity;
 using System.Text;
+using System.Reflection;
+using Unicorn.Data.EF;
+using Unicorn.Data.EF.DataAnnotations;
 
 namespace Unicorn.Mvc.KendoHelpers
 {
@@ -14,7 +17,12 @@ namespace Unicorn.Mvc.KendoHelpers
         where T : class
         where TContext : DbContext, new()
     {
-        protected TContext db = new TContext();
+        TContext db = new TContext();
+        protected TContext Context => db;
+
+        public event EventHandler<EntityEventArgs<T>> EntitySaving;
+        public event EventHandler<EntityEventArgs<T>> EntitySaved;
+
         public BaseTableController()
         {
             JsonDateConvertSetting = Mvc.JsonDateConvertSetting.PersianDate;
@@ -25,31 +33,48 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public virtual JsonResult Get([DataSourceRequest]DataSourceRequest request)
         {
-            return Json(db.Set<T>()
+            ReplaceNames(request);
+            return Json(Context.Set<T>()
                 .ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
+
+        private void ReplaceNames(DataSourceRequest request)
+        {
+            var props = typeof(T).GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
+                .Select(p => new { p.Name, DataAttribute = p.GetCustomAttribute<DataColumnAttribute>() })
+                .Where(p => p.DataAttribute != null && !string.IsNullOrEmpty(p.DataAttribute.MappedFromColumn))
+                .ToDictionary(p => p.Name, p=>p.DataAttribute.MappedFromColumn);
+            request.ReplaceNames(props);
+        }
+
         public virtual JsonResult Create(T v, [DataSourceRequest]DataSourceRequest request)
         {
-            db.Set<T>().Add(v);
-            db.SaveChanges();
+            EntitySaving?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Added));
+            Context.Set<T>().Add(v);
+            Context.SaveChanges();
+            EntitySaved?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Added));
             return Json(new[] { v }.ToDataSourceResult(request));
         }
         public virtual JsonResult Update(T p, [DataSourceRequest]DataSourceRequest request)
         {
-            db.Set<T>().Attach(p);
-            db.Entry(p).State = System.Data.Entity.EntityState.Modified;
-            db.SaveChanges();
+            Context.Set<T>().Attach(p);
+            Context.Entry(p).State = System.Data.Entity.EntityState.Modified;
+            EntitySaving?.Invoke(this, new EntityEventArgs<T>(p, EntityState.Modified));
+            Context.SaveChanges();
+            EntitySaved?.Invoke(this, new EntityEventArgs<T>(p, EntityState.Modified));
             return Json(new[] { p }.ToDataSourceResult(request));
         }
         public virtual JsonResult Delete(T v, [DataSourceRequest]DataSourceRequest request)
         {
-            db.Set<T>().Attach(v);
-            db.Set<T>().Remove(v);
-            db.SaveChanges();
+            Context.Set<T>().Attach(v);
+            EntitySaving?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Deleted));
+            Context.Set<T>().Remove(v);
+            Context.SaveChanges();
+            EntitySaved?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Deleted));
             return Json(new[] { v }.ToDataSourceResult(request));
         }
 
-        public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
+        //public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
         protected override JsonResult Json(object data, string contentType,
             Encoding contentEncoding, JsonRequestBehavior behavior)
         {
@@ -65,7 +90,7 @@ namespace Unicorn.Mvc.KendoHelpers
         {
             if (disposing)
             {
-                db.Dispose();
+                Context.Dispose();
             }
             base.Dispose(disposing);
         }
