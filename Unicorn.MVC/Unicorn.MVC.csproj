@@ -40,9 +40,9 @@
       <Private>True</Private>
       <HintPath>..\..\Supervision\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\GISMap\packages\Newtonsoft.Json.6.0.6\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\EDMMI\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -88,8 +88,8 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="WebGrease, Version=1.5.2.14234, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\..\Hi24\packages\WebGrease.1.5.2\lib\WebGrease.dll</HintPath>
+    <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\..\EDMMI\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -99,15 +99,16 @@
     <Compile Include="AutoUnlockMembershipProvider.cs" />
     <Compile Include="Controllers\UniControllerBase.cs" />
     <Compile Include="CssRewriteUrlTransformWrapper.cs" />
+    <Compile Include="JsonPersianDateTimeConverter.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="HtmlHelpers.cs" />
     <Compile Include="JsonDataContractActionResult.cs" />
     <Compile Include="JsonDictionary.cs" />
     <Compile Include="JsonNetResult.cs" />
-    <Compile Include="JsonPersianDateTimeConverter.cs" />
     <Compile Include="ModelBinders\ByteArrayModelBinder.cs" />
     <Compile Include="ModelBinders\CommaSeparatedModelBinder .cs" />
     <Compile Include="ModelBinders\DateTimeModelBinder.cs" />
+    <Compile Include="ModelBinders\FileBase64ModelBinder.cs" />
     <Compile Include="ModelBinders\IntArrayModelBinder.cs" />
     <Compile Include="MVCHelpers.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -131,6 +132,9 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="js\angularHelper.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Json\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

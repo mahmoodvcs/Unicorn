@@ -10,6 +10,7 @@ using System.Text;
 using System.Reflection;
 using Unicorn.Data.EF;
 using Unicorn.Data.EF.DataAnnotations;
+using Kendo.Mvc;
 
 namespace Unicorn.Mvc.KendoHelpers
 {
@@ -34,7 +35,14 @@ namespace Unicorn.Mvc.KendoHelpers
         public virtual JsonResult Get([DataSourceRequest]DataSourceRequest request)
         {
             ReplaceNames(request);
-            return Json(Context.Set<T>()
+            List<IFilterDescriptor> filters = new List<IFilterDescriptor>();
+            var props = typeof(T).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (var p in props)
+            {
+                if (!string.IsNullOrEmpty(Request.Params[p.Name]))
+                    filters.Add(new FilterDescriptor(p.Name, FilterOperator.IsEqualTo, Request.Params[p.Name]));
+            }
+            return Json(Context.Set<T>().Where(filters)
                 .ToDataSourceResult(request), JsonRequestBehavior.AllowGet);
         }
 

@@ -54,6 +54,10 @@
       <Private>True</Private>
       <HintPath>..\..\Article27\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\EDMMI\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -98,6 +102,7 @@
     <Compile Include="GridFilterSqlGenerator.cs" />
     <Compile Include="KendoGridExtentions.cs" />
     <Compile Include="KendoHelper.cs" />
+    <Compile Include="ModelBinders\DbGeographyModelBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

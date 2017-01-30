@@ -21,7 +21,7 @@ namespace Unicorn.Data.EF.DataAnnotations
         public Type FilterDelegateType { get; set; }
         public string MappedFromColumn { get; set; }
         /// <summary>
-        /// Name of the method or delegate whi this syntax: <code>Func<IQueryable, string, IQueryable></code>
+        /// Name of the method or delegate whit this syntax: <code>Func<IQueryable, string, IQueryable></code>
         /// example: <code>public static IQueryable FilterBank(IQueryable requests, string text)</code>
         /// </summary>
         public string FilterDelegate { get; set; }

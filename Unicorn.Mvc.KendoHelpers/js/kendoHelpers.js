@@ -18,3 +18,18 @@ Unicorn.kendoErrorHandler = function(grid, args) {
         });
     }
 };
+
+function categoryDropDownEditor(container, options) {
+    $('<input type="file" name="' + options.field + '"/>')
+        .appendTo(container)
+        .kendoUpload({
+            async: false,
+            dataTextField: "CategoryName",
+            dataValueField: "CategoryID",
+            dataSource: {
+                type: "odata",
+                transport: {
+                    read: "//demos.telerik.com/kendo-ui/service/Northwind.svc/Categories"
+                }
+            }
+        });

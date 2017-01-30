@@ -54,6 +54,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CachableDbContext.cs" />
+    <Compile Include="DataAnnotations\ComboBoxColumnAttribute.cs" />
     <Compile Include="DataAnnotations\DataColumnAttribute.cs" />
     <Compile Include="EntityEventArgs.cs" />
     <Compile Include="EntitySaveEventArgs.cs" />
