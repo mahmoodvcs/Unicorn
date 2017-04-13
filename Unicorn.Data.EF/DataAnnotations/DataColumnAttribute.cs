@@ -18,6 +18,7 @@ namespace Unicorn.Data.EF.DataAnnotations
         public bool Display { get; set; }
         public bool Editable { get; set; }
         public bool Sortable { get; set; }
+        public string DisplayTemplate { get; set; }
         public Type FilterDelegateType { get; set; }
         public string MappedFromColumn { get; set; }
         /// <summary>

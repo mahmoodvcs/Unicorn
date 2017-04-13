@@ -74,14 +74,18 @@ namespace Unicorn.Mvc.KendoHelpers
                 foreach(var p in defaultFieldValues.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public))
                     fieldValues[p.Name] = p.GetValue(defaultFieldValues);
             }
-
             List<PropertyInfo> usedFields = new List<PropertyInfo>();
+            List<DataColumnModel> columnsModel = new List<KendoHelpers.DataEditorHelpers.DataColumnModel>();
             g.Columns(cols =>
             {
                 foreach (var p in attrs)
                 {
+                    var cm = new DataColumnModel();
+                    cm.field = p.Key.Name;
                     if (p.Key == keyProp.Key)
+                    {
                         continue;
+                    }
                     if (fieldValues.ContainsKey(p.Key.Name))
                         continue;
                     //if (p.Value.Any(a => a is IgonreColumnAttribute))
@@ -94,23 +98,36 @@ namespace Unicorn.Mvc.KendoHelpers
                     if (columnAttribute != null && !columnAttribute.Display)
                         continue;
 
+                    columnsModel.Add(cm);
                     usedFields.Add(p.Key);
                     var fk = foreignKeys.SingleOrDefault(f => f.Item1 == p.Key);
 
                     if (fk != null)
                     {
+                        cm.type = "combo";
                         CreateForeignKeyColumn<TContext, TEntity>(cols, p, fk);
                         continue;
                     }
                     if (CheckAndAddComboBoxColumn<TContext, TEntity>(cols, p))
-                        continue;
-                    if(p.Key.PropertyType.IsEnum)
                     {
+                        cm.type = "combo";
+                        continue;
+                    }
+                    if (p.Key.PropertyType.IsEnum)
+                    {
+                        cm.type = "combo";
                         CreateEnumColumn<TContext, TEntity>(cols, p);
                         continue;
                     }
+                    //cols.Template()
                     var col = cols.Bound(p.Key.Name);
-
+                    if (p.Value.OfType<ImageColumnAttribute>().Any())
+                    {
+                        cm.type = "image";
+                        col.ClientTemplate("<div class='imgCol'></div>");
+                        continue;
+                    }
+                    cm.type = DataColumnModel.GetType(p.Key.PropertyType);
                 }
                 cols.Command(c => c.Localize());
             }).Editable(c => c.Mode(GridEditMode.InLine))
@@ -130,17 +147,20 @@ namespace Unicorn.Mvc.KendoHelpers
                             }
                             foreach (var p in props)
                             {
-                                if(!usedFields.Any(f=>f.Name == p.Name))
+                                if (!usedFields.Any(f => f.Name == p.Name))
                                     m.Field(p.Name, p.PropertyType).Editable(false);
                             }
-                        });
+                        })
+                    .Events(ev => ev.Error("Unicorn.kendoErrorHandler"));
                 })
                 .ToolBar(t => t.AddCreateLocalize())
-                .Sortable().DoConfig();
-            //.Events(ev => ev//.DataBound("dataBound")
-            //    .Edit("createGridDatePicker"));
-
+                .Sortable().DoConfig()
+                .Events(ev => ev.Edit("DataEditor_GridEdit"));
+            g.TableHtmlAttributes(new Dictionary<string, object>{
+                { "data-model", Newtonsoft.Json.JsonConvert.SerializeObject(columnsModel) }
+                });
             return g;
+
         }
 
         private static bool CheckAndAddComboBoxColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, KeyValuePair<PropertyInfo, Attribute[]> p)
@@ -159,7 +179,7 @@ namespace Unicorn.Mvc.KendoHelpers
             where TContext : CachableDbContext, new()
             where TEntity : class
         {
-            var fkEntityId = GetIdField(fkEntityType);
+            var fkEntityId = EntityReflectionHelper.GetIdProperty(fkEntityType);
             var fkEntityNameField = GetEntityNameField(fkEntityType);
             var data = new TContext().GetAll(fkEntityType).ToList();
             //dynamic empty = new ExpandoObject();
@@ -284,11 +304,6 @@ namespace Unicorn.Mvc.KendoHelpers
                .Where(pp => pp.PropertyType == typeof(string)).FirstOrDefault();
         }
 
-        static PropertyInfo GetIdField(Type type)
-        {
-            return type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
-               .Where(pp => pp.GetCustomAttribute<KeyAttribute>() != null).FirstOrDefault();
-        }
 
         private static CrudOperationBuilder AddCRUDOperationData(this CrudOperationBuilder r, DataEditorMemberMap[] memberFormMaps)
         {
@@ -319,11 +334,24 @@ namespace Unicorn.Mvc.KendoHelpers
             var url = new UrlHelper(html.ViewContext.RequestContext);
             StringBuilder sb = new StringBuilder();
             sb.Append("<script src='")
-                    .Append(url.Content("~/Unicorn_Resource?a=UniDev.Web&r=UniDev.Web.js.DataEditor.js&"))
+                    .Append(url.Content("~/Unicorn_Resource?a=Unicorn.Mvc.KendoHelpers&r=Unicorn.Mvc.KendoHelpers.js.DataEditor.js&"))
                     .Append(File.GetLastWriteTime(Assembly.GetExecutingAssembly().Location).Ticks.ToString())
                     .Append("'></script>\r\n");
             return new MvcHtmlString(sb.ToString());
         }
 
+        #region Nested Classes
+        class DataColumnModel
+        {
+            public string field { get; set; }
+            public string type { get; set; }
+
+            public static string GetType(Type propertyType)
+            {
+                return propertyType.Name.ToLower();
+            }
+
+        }
+        #endregion Nested Classes
     }
 }

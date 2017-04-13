@@ -6,8 +6,7 @@ using System.Threading.Tasks;
 
 namespace Unicorn.Data.EF.DataAnnotations
 {
-    public class ComboBoxColumnAttribute : Attribute
+    public class ImageColumnAttribute : DataColumnAttribute
     {
-        public Type ReferenceType { get; set; }
     }
 }

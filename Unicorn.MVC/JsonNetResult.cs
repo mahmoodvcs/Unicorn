@@ -21,6 +21,10 @@ namespace Unicorn.Mvc
         {
 
         }
+        public JsonNetResult(JsonSerializerSettings settings)
+        {
+            this.Settings = settings;
+        }
         public JsonNetResult(JsonDateConvertSetting dateSetting)
         {
             Settings = new JsonSerializerSettings

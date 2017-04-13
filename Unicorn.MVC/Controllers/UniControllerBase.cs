@@ -28,7 +28,7 @@ namespace Unicorn.Mvc.Controllers
         public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
         public string UserName
         {
-            get { return User == null || !User.Identity.IsAuthenticated? null : User.Identity.Name; }
+            get { return User == null || !User.Identity.IsAuthenticated ? null : User.Identity.Name; }
         }
         public virtual JsonResult JsonContract(object data)
         {
@@ -54,6 +54,22 @@ namespace Unicorn.Mvc.Controllers
                 };
         }
 
+        public JsonNetResult Json(object data,
+            params Newtonsoft.Json.JsonConverter[] converters)
+        {
+            return Json(data, JsonRequestBehavior.DenyGet, converters);
+        }
+        public JsonNetResult Json(object data, JsonRequestBehavior behavior,
+            params Newtonsoft.Json.JsonConverter[] converters)
+
+        {
+            var result = (JsonNetResult)base.Json(data, behavior);
+            foreach (var c in converters)
+            {
+                result.Settings.Converters.Add(c);
+            }
+            return result;
+        }
         //public virtual JsonResult Error(Exception ex)
         //{
         //    LogException(ex);

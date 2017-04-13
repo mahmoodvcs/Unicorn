@@ -99,6 +99,7 @@
     <Compile Include="AutoUnlockMembershipProvider.cs" />
     <Compile Include="Controllers\UniControllerBase.cs" />
     <Compile Include="CssRewriteUrlTransformWrapper.cs" />
+    <Compile Include="Filters\JsonExceptionFilterAttribute.cs" />
     <Compile Include="JsonPersianDateTimeConverter.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="HtmlHelpers.cs" />

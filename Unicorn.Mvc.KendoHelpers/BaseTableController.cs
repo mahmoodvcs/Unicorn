@@ -11,9 +11,12 @@ using System.Reflection;
 using Unicorn.Data.EF;
 using Unicorn.Data.EF.DataAnnotations;
 using Kendo.Mvc;
+using System.Data.SqlClient;
+using Unicorn.Mvc.Filters;
 
 namespace Unicorn.Mvc.KendoHelpers
 {
+    //[JsonExceptionFilter]
     public abstract class BaseTableController<TContext, T> : Unicorn.Mvc.Controllers.UniControllerBase
         where T : class
         where TContext : DbContext, new()
@@ -51,7 +54,7 @@ namespace Unicorn.Mvc.KendoHelpers
             var props = typeof(T).GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public)
                 .Select(p => new { p.Name, DataAttribute = p.GetCustomAttribute<DataColumnAttribute>() })
                 .Where(p => p.DataAttribute != null && !string.IsNullOrEmpty(p.DataAttribute.MappedFromColumn))
-                .ToDictionary(p => p.Name, p=>p.DataAttribute.MappedFromColumn);
+                .ToDictionary(p => p.Name, p => p.DataAttribute.MappedFromColumn);
             request.ReplaceNames(props);
         }
 
@@ -77,7 +80,17 @@ namespace Unicorn.Mvc.KendoHelpers
             Context.Set<T>().Attach(v);
             EntitySaving?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Deleted));
             Context.Set<T>().Remove(v);
-            Context.SaveChanges();
+            try
+            {
+                Context.SaveChanges();
+            }
+            catch (SqlException ex)
+            {
+                if (ex.Errors[0].Number == 547)//FK
+                {
+                    throw new Exception("این اطلاعات جای دیگری استفاده شده است و نمی تواند حذف شود.", ex);
+                }
+            }
             EntitySaved?.Invoke(this, new EntityEventArgs<T>(v, EntityState.Deleted));
             return Json(new[] { v }.ToDataSourceResult(request));
         }

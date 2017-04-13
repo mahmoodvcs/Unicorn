@@ -56,7 +56,10 @@
     <Compile Include="CachableDbContext.cs" />
     <Compile Include="DataAnnotations\ComboBoxColumnAttribute.cs" />
     <Compile Include="DataAnnotations\DataColumnAttribute.cs" />
+    <Compile Include="DataAnnotations\ImageColumnAttribute.cs" />
     <Compile Include="EntityEventArgs.cs" />
+    <Compile Include="EntityExtentions.cs" />
+    <Compile Include="EntityReflectionHelper.cs" />
     <Compile Include="EntitySaveEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
