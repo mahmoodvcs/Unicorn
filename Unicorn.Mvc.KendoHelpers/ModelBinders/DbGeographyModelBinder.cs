@@ -12,8 +12,14 @@ namespace Unicorn.Mvc.KendoHelpers.ModelBinders
     {
         public object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
         {
-            var latitude = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lat").RawValue;
-            var longitude = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lon").RawValue;
+            var val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lat");
+            if (val == null)
+                return null;
+            var latitude = val.RawValue;
+            val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lon");
+            if (val == null)
+                return null;
+            var longitude = val.RawValue;
             if (latitude != null && longitude != null)
             {
                 var text = string.Format("POINT({0} {1})", longitude, latitude);

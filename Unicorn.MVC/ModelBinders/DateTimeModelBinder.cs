@@ -24,7 +24,7 @@ namespace Unicorn.Mvc.ModelBinders
                 s = ((string[])value)[0];
             else
                 s = value.ToString();
-            if (string.IsNullOrEmpty(s))
+            if (string.IsNullOrEmpty(s) || s == "null")
                 return null;
             long l;
             if (long.TryParse(s, out l))

@@ -100,6 +100,7 @@
     <Compile Include="BaseTableController.cs" />
     <Compile Include="DataEditorHelpers.cs" />
     <Compile Include="GridFilterSqlGenerator.cs" />
+    <Compile Include="JsonConverters\DbGeographyConverter.cs" />
     <Compile Include="KendoGridExtentions.cs" />
     <Compile Include="KendoHelper.cs" />
     <Compile Include="ModelBinders\DbGeographyModelBinder.cs" />

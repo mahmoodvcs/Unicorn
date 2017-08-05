@@ -11,10 +11,10 @@ namespace Unicorn.Mvc
         private bool ConvertTime;
         private bool ArabicNumerals;
 
-        public JsonPersianDateTimeConverter(bool convertTime = false, bool arabicNumerals = false)
+        public JsonPersianDateTimeConverter(bool includeTime = false, bool arabicNumerals = false)
         {
             // TODO: Complete member initialization
-            this.ConvertTime = convertTime;
+            this.ConvertTime = includeTime;
             this.ArabicNumerals = arabicNumerals;
         }
         public override bool CanConvert(Type objectType)

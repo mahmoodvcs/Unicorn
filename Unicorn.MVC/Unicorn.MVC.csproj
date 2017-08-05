@@ -100,7 +100,8 @@
     <Compile Include="Controllers\UniControllerBase.cs" />
     <Compile Include="CssRewriteUrlTransformWrapper.cs" />
     <Compile Include="Filters\JsonExceptionFilterAttribute.cs" />
-    <Compile Include="JsonPersianDateTimeConverter.cs" />
+    <Compile Include="JsonConverters\ByteArrayToBase64JsonConverter.cs" />
+    <Compile Include="JsonConverters\JsonPersianDateTimeConverter.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="HtmlHelpers.cs" />
     <Compile Include="JsonDataContractActionResult.cs" />
