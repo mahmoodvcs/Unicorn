@@ -12,18 +12,18 @@ namespace Unicorn.Data.EF
     {
         public EntitySaveEventArgs(DbContext db)
         {
-            this.db = db;
+            this.DbContext = db;
         }
-        private DbContext db;
+        public readonly DbContext DbContext;
         public IEnumerable<DbEntityEntry<T>> GetChanges<T>()
             where T : class
         {
-            return db.ChangeTracker.Entries<T>();
+            return DbContext.ChangeTracker.Entries<T>();
         }
         public IEnumerable<T> GetChanges<T>(EntityState state)
             where T : class
         {
-            return db.ChangeTracker.Entries<T>().Where(e => e.State == state).Select(e => e.Entity);
+            return DbContext.ChangeTracker.Entries<T>().Where(e => e.State == state).Select(e => e.Entity);
         }
     }
 }
