@@ -11,7 +11,7 @@ namespace Unicorn.Mvc.Controllers
 {
     public class Unicorn_ResourceController : Controller
     {
-        [OutputCache(VaryByParam = "r,a", Location = System.Web.UI.OutputCacheLocation.ServerAndClient, Duration = 3600 * 24 * 365)]
+        [OutputCache(VaryByParam = "*", Location = System.Web.UI.OutputCacheLocation.Client, Duration = 3600 * 24 * 30)]
         public FileResult Index(string r, string a)
         {
             Assembly ase;
@@ -19,10 +19,11 @@ namespace Unicorn.Mvc.Controllers
                 ase = Assembly.GetExecutingAssembly();
             else
             {
-                ase = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(aa => aa.FullName == a);
+                ase = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(aa => aa.GetName().Name == a);
                 if (ase == null)
                 {
-                    string codeBase = Assembly.GetExecutingAssembly().CodeBase;
+                    ase = Assembly.GetExecutingAssembly();
+                    string codeBase = ase.Location ?? ase.CodeBase;
                     UriBuilder uri = new UriBuilder(codeBase);
                     string path = Uri.UnescapeDataString(uri.Path);
                     path = Path.Combine(Path.GetDirectoryName(path), a + ".dll");
@@ -32,6 +33,11 @@ namespace Unicorn.Mvc.Controllers
             if (ase != null)
             {
                 var str = ase.GetManifestResourceStream(r);
+                if(str == null)
+                {
+                    ControllerContext.HttpContext.Response.StatusCode = 404;
+                    return null;
+                }
                 return File(str, Unicorn.Web.WebUtility.GetMimeType(Path.GetExtension(r)));
             }
             ControllerContext.HttpContext.Response.StatusCode = 404;

@@ -29,7 +29,7 @@ namespace Unicorn.Mvc.KendoHelpers
 
         public BaseTableController()
         {
-            JsonDateConvertSetting = Mvc.JsonDateConvertSetting.PersianDate;
+            JsonResultSettings.DateConvertSetting = Mvc.JsonDateConvertSetting.PersianDate;
         }
         public virtual ActionResult Index()
         {
@@ -96,17 +96,17 @@ namespace Unicorn.Mvc.KendoHelpers
         }
 
         //public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
-        protected override JsonResult Json(object data, string contentType,
-            Encoding contentEncoding, JsonRequestBehavior behavior)
-        {
-            return new JsonNetResult(JsonDateConvertSetting)
-            {
-                Data = data,
-                ContentType = contentType,
-                ContentEncoding = contentEncoding,
-                JsonRequestBehavior = behavior
-            };
-        }
+        //protected override JsonResult Json(object data, string contentType,
+        //    Encoding contentEncoding, JsonRequestBehavior behavior)
+        //{
+        //    return new JsonNetResult(JsonDateConvertSetting)
+        //    {
+        //        Data = data,
+        //        ContentType = contentType,
+        //        ContentEncoding = contentEncoding,
+        //        JsonRequestBehavior = behavior
+        //    };
+        //}
         protected override void Dispose(bool disposing)
         {
             if (disposing)

@@ -13,6 +13,7 @@ using Unicorn.Data;
 using System.IO;
 using Common.Logging;
 using System.Runtime.Caching;
+using System.Linq;
 
 namespace Unicorn.Web.Security.Authorization
 {
@@ -59,6 +60,19 @@ namespace Unicorn.Web.Security.Authorization
         {
             get { return actions; }
             set { actions = value; }
+        }
+
+        static MemoryCache _authorizationCache = null;
+        static MemoryCache AuthorizationCache
+        {
+            get
+            {
+                if (_authorizationCache == null)
+                {
+                    _authorizationCache = new MemoryCache("AuthorizationCache");
+                }
+                return _authorizationCache;
+            }
         }
 
         #region RegisterAction
@@ -263,7 +277,7 @@ namespace Unicorn.Web.Security.Authorization
             userName = userName.ToLower();
             string[] userActions;
             string cacheKey = GetCacheKey(userName);
-            if (MemoryCache.Default[cacheKey] == null)
+            if (AuthorizationCache[cacheKey] == null)
             {
                 List<string> list = new List<string>();
                 list.AddRange(GetUserActions(userName));
@@ -274,33 +288,45 @@ namespace Unicorn.Web.Security.Authorization
                 }
                 log.Trace(m => m("Loading from database. user: '" + userName + "'. Actions:  " + string.Join(", ", list)));
                 userActions = list.ToArray();
-                MemoryCache.Default.Add(cacheKey, userActions, new CacheItemPolicy()
+                AuthorizationCache.Add(cacheKey, userActions, new CacheItemPolicy()
                 {
                     SlidingExpiration = new TimeSpan(2, 0, 0)
                 });
             }
             else
             {
-                userActions = (string[])MemoryCache.Default[cacheKey];
+                userActions = (string[])AuthorizationCache[cacheKey];
                 log.Trace("Returning cahced. user: " + userName);
             }
             return userActions;
         }
 
-        public static string[] GetUserActions(string userName)
+        public static string[] GetUserActions(string userName, string parentAction = null)
         {
-            return GetActions(userName, true);
+            return GetActions(userName, true, parentAction);
         }
-        public static string[] GetRoleActions(string roleName)
+        public static string[] GetRoleActions(string roleName, string parentAction = null)
         {
-            return GetActions(roleName, false);
+            return GetActions(roleName, false, parentAction);
         }
-        private static string[] GetActions(string userOrRoleName, bool isUser)
+        private static string[] GetActions(string userOrRoleName, bool isUser, string parentAction = null)
         {
             string userRoleId = GetUserRoleId(userOrRoleName, isUser);
             if (userRoleId == null)
                 return new string[0];
-            var dr = ExecuteReader(string.Format("select ActionName from {0} where UserRoleId='{1}'", userRoleActionsTableName, userRoleId));
+            return GetActions(userRoleId, parentAction);
+        }
+        public static string[] GetActions(string userOrRoleId, string parentAction = null)
+        {
+            var cmd = string.Format("select ActionName from {0} where UserRoleId='{1}'", userRoleActionsTableName, userOrRoleId);
+            List<SqlParameter> pars= new List<SqlParameter>();
+            if (parentAction != null)
+            {
+                cmd += $" and ActionName like @p + '.%'";
+                pars.Add(new SqlParameter("@p", parentAction));
+            }
+            var dr = ExecuteReader(cmd, pars.ToArray());
+
             //SqlConnection con = GetConnection();
             //SqlCommand cmd = new SqlCommand();
             //cmd.Connection = con;
@@ -328,7 +354,7 @@ namespace Unicorn.Web.Security.Authorization
             return actions.ToArray();
         }
 
-        private static string GetUserRoleId(string userOrRoleName, bool isUser)
+        public static string GetUserRoleId(string userOrRoleName, bool isUser)
         {
             string userRoleId;
             object o;
@@ -360,28 +386,29 @@ namespace Unicorn.Web.Security.Authorization
                 foreach (string s in subActions)
                     AddAction(roleName, action + "." + s, false);
         }
-        private static void AddAction(string userOrRoleName, string actionText, bool isUser)
+        public static void AddAction(string userOrRoleName, string actionText, bool isUser)
         {
             string userRoleId = GetUserRoleId(userOrRoleName, isUser);
-            //SqlConnection con = GetConnection();
-            //SqlCommand cmd = new SqlCommand();
-            //cmd.Connection = con;
-            ExecuteScalar("insert into " + userRoleActionsTableName + " (userRoleId, ActionName) values (@uid, @ac)",
-                new SqlParameter("@uid", userRoleId), new SqlParameter("@ac", actionText));
+            AddAction(userRoleId, actionText);
             if (isUser)
             {
                 log.Trace(m => m("User: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
-                //cmd.CommandText = "aspnet_Authorization_AddActionForUser";
-                //cmd.Parameters.Add(new SqlParameter("@UserName", userOrRoleName));
                 UserAuthorizationChanged(HttpContext.Current, userOrRoleName);
             }
             else
             {
                 log.Trace(m => m("Role: '" + userOrRoleName + "' - Action: '" + actionText + "'"));
-                //cmd.CommandText = "aspnet_Authorization_AddActionForRole";
-                //cmd.Parameters.Add(new SqlParameter("@RoleName", userOrRoleName));
                 RoleAuthorizationChanged(HttpContext.Current, userOrRoleName);
             }
+
+        }
+        public static void AddAction(string userOrRoleId, string action)
+        {
+            //SqlConnection con = GetConnection();
+            //SqlCommand cmd = new SqlCommand();
+            //cmd.Connection = con;
+            ExecuteScalar("insert into " + userRoleActionsTableName + " (userRoleId, ActionName) values (@uid, @ac)",
+                new SqlParameter("@uid", userOrRoleId), new SqlParameter("@ac", action));
             //cmd.Parameters.Add(new SqlParameter("@ActionText", actionText));
             //cmd.CommandType = System.Data.CommandType.StoredProcedure;
             //con.Open();
@@ -412,13 +439,15 @@ namespace Unicorn.Web.Security.Authorization
                 , new SqlParameter("@prefix", actionPrefix));
             AuthorizationManager.UserAuthorizationChanged(userName);
         }
-        static string GetActionPrefixCondition(string actionPrefix)
+        static string GetActionPrefixCondition(string actionPrefix, bool revokeAccessToSubActions = true)
         {
             string where;
             if (actionPrefix.EndsWith("."))
                 where = "left(ActionName, @len) = @prefix";
-            else
+            else if(revokeAccessToSubActions)
                 where = "(left(ActionName, @len+1) = (@prefix+'.') or ActionName = @prefix)";
+            else
+                where = "(ActionName = @prefix)";
             return where;
         }
         public static void ClearRoleActions(string roleName, string actionPrefix)
@@ -454,6 +483,24 @@ namespace Unicorn.Web.Security.Authorization
             //SqlHelper.ExecuteNonQueryProcedure("aspnet_Authorization_ClearRoleActions", new SqlParameter("@RoleName", roleName));
             RoleAuthorizationChanged(roleName);
         }
+        public static void RevokeAccess(string userOrRoleId, string action, bool revokeAccessToSubActions = true)
+        {
+            var cmd = $"delete from {userRoleActionsTableName} where upper(UserRoleId)=@id";
+            if (!string.IsNullOrEmpty(action))
+            {
+                string where = GetActionPrefixCondition(action, revokeAccessToSubActions);
+                cmd += " and " + where;
+            }
+            ExecuteScalar(cmd
+                , new SqlParameter("@id", userOrRoleId)
+                , new SqlParameter("@len", action.Length)
+                , new SqlParameter("@prefix", action));
+        }
+        public static void ClearAuthorizationCache()
+        {
+            AuthorizationCache.Dispose();
+            _authorizationCache = null;
+        }
         #endregion
 
         public static void UserAuthorizationChanged(string userName)
@@ -464,7 +511,7 @@ namespace Unicorn.Web.Security.Authorization
         {
             //string cacheKey = "AuthorizedAction_UserActions_" + userName;
             log.Trace(m => m("User: '" + userName + "'"));
-            MemoryCache.Default.Remove(GetCacheKey(userName));
+            AuthorizationCache.Remove(GetCacheKey(userName));
         }
         public static void RoleAuthorizationChanged(string roleName)
         {
@@ -553,5 +600,30 @@ namespace Unicorn.Web.Security.Authorization
         {
             actions.SubActions.Clear();
         }
+
+        public static AuthorizedAction FindAction(string action)
+        {
+            if (string.IsNullOrEmpty(action))
+                return actions;
+            return FindAction(actions, action);
+        }
+        public static AuthorizedAction FindAction(AuthorizedAction parentAction, string subaction)
+        {
+            var i = subaction.IndexOf(".");
+            var action = subaction;
+            if (i > 0)
+            {
+                action = subaction.Substring(0, i);
+                subaction = subaction.Substring(i + 1);
+            }
+            else
+                subaction = null;
+            var ac = parentAction.SubActions.FirstOrDefault(a => a.Name == action);
+            if (subaction != null)
+                return FindAction(ac, subaction);
+            else
+                return ac;
+        }
+
     }
 }

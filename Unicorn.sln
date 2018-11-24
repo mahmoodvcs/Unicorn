@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.28010.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Web", "Unicorn.Web\Unicorn.Web.csproj", "{12C9FAD7-31F2-45AB-B1DD-0760236EA7A0}"
 EndProject
@@ -10,6 +10,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.MVC", "Unicorn.MVC\Unicorn.MVC.csproj", "{55F321DE-1E41-40BA-957B-6EC7A635CC8D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Mvc.KendoHelpers", "Unicorn.Mvc.KendoHelpers\Unicorn.Mvc.KendoHelpers.csproj", "{4010E4F7-234A-4302-9367-D21AC29E2DE5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Data.EF", "Unicorn.Data.EF\Unicorn.Data.EF.csproj", "{B208BE3B-4582-4094-9F49-6306C35AA39C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unicorn.Mvc.UI.Security", "Unicorn.Mvc.UI.Security\Unicorn.Mvc.UI.Security.csproj", "{1F395B2D-BA0B-41AE-96E3-951870DFACA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,8 +37,19 @@ Global
 		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4010E4F7-234A-4302-9367-D21AC29E2DE5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B208BE3B-4582-4094-9F49-6306C35AA39C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B208BE3B-4582-4094-9F49-6306C35AA39C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B208BE3B-4582-4094-9F49-6306C35AA39C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B208BE3B-4582-4094-9F49-6306C35AA39C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F395B2D-BA0B-41AE-96E3-951870DFACA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F395B2D-BA0B-41AE-96E3-951870DFACA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F395B2D-BA0B-41AE-96E3-951870DFACA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F395B2D-BA0B-41AE-96E3-951870DFACA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1F5F6E8F-1892-4EEA-94C8-126BC769827A}
 	EndGlobalSection
 EndGlobal

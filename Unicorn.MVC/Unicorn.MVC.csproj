@@ -13,6 +13,7 @@
     <FileAlignment>512</FileAlignment>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\..\EDMMI\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -97,11 +98,13 @@
     <Compile Include="AngularHelpers.cs" />
     <Compile Include="AuthorizeActionAttribute.cs" />
     <Compile Include="AutoUnlockMembershipProvider.cs" />
+    <Compile Include="BundleHelpers.cs" />
     <Compile Include="Controllers\UniControllerBase.cs" />
     <Compile Include="CssRewriteUrlTransformWrapper.cs" />
     <Compile Include="Filters\JsonExceptionFilterAttribute.cs" />
     <Compile Include="JsonConverters\ByteArrayToBase64JsonConverter.cs" />
     <Compile Include="JsonConverters\JsonPersianDateTimeConverter.cs" />
+    <Compile Include="JsonResultSettings.cs" />
     <Compile Include="MessageType.cs" />
     <Compile Include="HtmlHelpers.cs" />
     <Compile Include="JsonDataContractActionResult.cs" />
@@ -130,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="nuget.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

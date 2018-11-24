@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": false,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "module": "none",
+    "jsx": "react",
+    "lib": [
+      "es2015",
+      "dom"
+    ],
+    "declaration": false
+  },
+  "compileOnSave": true,
+  "exclude": [
+    "node_modules",
+    "wwwroot",
+    "*.d.ts",
+    "*.js"
+  ]
+}

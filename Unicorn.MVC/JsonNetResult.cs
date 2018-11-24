@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Unicorn.Mvc
 {
@@ -17,23 +18,23 @@ namespace Unicorn.Mvc
     public class JsonNetResult : JsonResult
     {
         public JsonNetResult()
-            : this(JsonDateConvertSetting.PersianDate)
         {
-
         }
         public JsonNetResult(JsonSerializerSettings settings)
         {
             this.Settings = settings;
         }
-        public JsonNetResult(JsonDateConvertSetting dateSetting)
+        public JsonNetResult(JsonResultSettings setting)
         {
             Settings = new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 Converters = new List<JsonConverter>()
             };
-            if (dateSetting != JsonDateConvertSetting.None)
-                Settings.Converters.Add(new JsonPersianDateTimeConverter(dateSetting == JsonDateConvertSetting.PersianDateTime, false));
+            if (setting.DateConvertSetting != JsonDateConvertSetting.None)
+                Settings.Converters.Add(new JsonPersianDateTimeConverter(setting.DateConvertSetting == JsonDateConvertSetting.PersianDateTime, false));
+            if (setting.UseCamelCaseNames)
+                Settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
         }
 
         public JsonSerializerSettings Settings { get; private set; }

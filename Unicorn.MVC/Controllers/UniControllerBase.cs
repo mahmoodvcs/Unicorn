@@ -11,8 +11,12 @@ namespace Unicorn.Mvc.Controllers
     {
         protected UniControllerBase()
         {
+            JsonResultSettings = new JsonResultSettings
+            {
+                DateConvertSetting = JsonDateConvertSetting.PersianDate,
+                UseCamelCaseNames = false
+            };
             //logger = DependencyResolver.Current.GetService<ILogger>();// new SqlLogger();
-            JsonDateConvertSetting = JsonDateConvertSetting.PersianDate;
             //traceLog = NLog.LogManager.GetCurrentClassLogger();
             UseNativeJsonSerializer = false;
         }
@@ -25,7 +29,12 @@ namespace Unicorn.Mvc.Controllers
         //}
         //protected readonly ILogger logger;
         //protected readonly NLog.Logger traceLog;
-        public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
+
+        //public JsonDateConvertSetting JsonDateConvertSetting { get; set; }
+        //public bool UseCamelCaseJsonNames { get; set; } = false;
+
+        public JsonResultSettings JsonResultSettings { get; set; }
+
         public string UserName
         {
             get { return User == null || !User.Identity.IsAuthenticated ? null : User.Identity.Name; }
@@ -45,12 +54,12 @@ namespace Unicorn.Mvc.Controllers
             if (UseNativeJsonSerializer)
                 return base.Json(data, contentType, contentEncoding, behavior);
             else
-                return new JsonNetResult(JsonDateConvertSetting)
+                return new JsonNetResult(JsonResultSettings)
                 {
                     Data = data,
                     ContentType = contentType,
                     ContentEncoding = contentEncoding,
-                    JsonRequestBehavior = behavior
+                    JsonRequestBehavior = behavior,
                 };
         }
 
@@ -63,7 +72,7 @@ namespace Unicorn.Mvc.Controllers
             params Newtonsoft.Json.JsonConverter[] converters)
 
         {
-            var result = (JsonNetResult)base.Json(data, behavior);
+            var result = (JsonNetResult)Json(data, "application/json", Encoding.UTF8, behavior);
             foreach (var c in converters)
             {
                 result.Settings.Converters.Add(c);

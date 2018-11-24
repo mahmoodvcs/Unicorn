@@ -148,24 +148,29 @@ namespace Unicorn.Web
             }
             if (rolesAttrib != null)
             {
-                string[] menuRoles = Utility.SplitString(rolesAttrib.Value, ',');
-                if (menuRoles.Length == 0 || HasAnyOf(userRoles, menuRoles))
+                if (rolesAttrib.Value == "*")
                     hasAccess = true;
-                //else if (usersAttrib == null)
-                //{
-                //    //shouldReturn = true;
-                //    return false;
-                //}
+                else
+                {
+                    string[] menuRoles = Utility.SplitString(rolesAttrib.Value, ',');
+                    if (menuRoles.Length == 0 || HasAnyOf(userRoles, menuRoles))
+                        hasAccess = true;
+                }
             }
 
             string userName = user.Identity.Name.ToLower();
             if (usersAttrib != null)
             {
-                string[] users = Utility.SplitString(usersAttrib.Value, ',');
-                foreach (string u in users)
+                if (usersAttrib.Value == "*")
+                    hasAccess = true;
+                else
                 {
-                    if (userName == u.ToLower())
-                        hasAccess = true;
+                    string[] users = Utility.SplitString(usersAttrib.Value, ',');
+                    foreach (string u in users)
+                    {
+                        if (userName == u.ToLower())
+                            hasAccess = true;
+                    }
                 }
                 //if (userName.Length > 0 && !hasAccess)
                 //{

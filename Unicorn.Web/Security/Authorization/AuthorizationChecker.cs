@@ -61,8 +61,8 @@ namespace Unicorn.Web.Security.Authorization
             string s = "";
             if (!string.IsNullOrEmpty(userName))
             {
-            string[] allActions = AuthorizationManager.GetAllActionsForUser(userName);
-            if (Array.IndexOf(allActions, action) >= 0)
+                string[] allActions = AuthorizationManager.GetAllActionsForUser(userName);
+                if (Array.IndexOf(allActions, action) >= 0)
                     ret = true;
                 else if (allActions.Any(a => action.StartsWith(a + ".")))
                     ret = true;
