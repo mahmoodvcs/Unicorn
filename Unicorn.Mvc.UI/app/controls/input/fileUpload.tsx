@@ -1,22 +1,31 @@
-﻿class FileUploadProps {
+﻿
+class FileUploadProps {
     multiple?: boolean = false;
     readBinary?: boolean = false;
     maxSize?: number;
-    onChange: (any) => void;
     files?: FileUploadFile[];
     showDetails?: boolean = false;
+
+    onChange: (any) => void;
 }
 class FileUploadFile {
     name: string;
     size: number;
     type?: string;
+    file?: File | string;
+    ext?: string;
 }
+
 class FileUploadState {
     files: FileUploadFile[]
 }
 
 class FileUpload extends React.Component<FileUploadProps, FileUploadState>
 {
+    constructor(props) {
+        super(props);
+        this.fileSelected = this.fileSelected.bind(this);
+    }
     file: HTMLInputElement;
 
     componentWillMount() {
@@ -68,7 +77,9 @@ class FileUpload extends React.Component<FileUploadProps, FileUploadState>
         }
     }
 
-    isImage(name) {
+    isImage(name): boolean {
+        if (!name)
+            return false;
         var i = name.lastIndexOf('.');
         var ext = name.substr(i + 1);
         return ["png", "gif", "jpg", "jpeg"].indexOf(ext.toLowerCase()) >= 0;
@@ -87,43 +98,57 @@ class FileUpload extends React.Component<FileUploadProps, FileUploadState>
         this.props.onChange(files);
         this.setState({ files: files });
     }
-
+    renderConsice() {
+        return (<div style="float: right;">
+            {this.state.files.map((f, i) =>
+                (<div>
+                    <img width="50" src={"data:image/png;base64," + f.file} />
+                    <button className="btn btn-xs btn-danger" onClick={()=> this.removeFile(i)}>
+                        <i className="fa fa-trash"></i>
+                        </button>
+                </div>)
+            )}
+        </div>);
+    }
+    renderTable() {
+        return (<table className="table-bordered table-hover table-striped table-condensed">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>نام فایل</th>
+                    <th>اندازه</th>
+                    <th>پیش نمایش</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {this.state.files.map((f, i) => {
+                    return (
+                        <tr key={i}>
+                            <td>{i + 1}</td>
+                            <td>
+                                {
+                                    this.props.editableNames ?
+                                        <input value={f.name} onChange={(e) => this.fileNameChanged(e.target.value, i)} />
+                                        : f.name
+                                }
+                            </td>
+                            <td>{f.size}</td>
+                            <td>{((f.type && f.type.match('image.*')) || this.isImage(f.ext)) && <img width="50" src={"data:image/png;base64," + f.file} />}</td>
+                            <td>
+                                <button className="btn btn-danger" onClick={() => this.removeFile(i)}><i className="fa fa-trash"></i></button>
+                            </td>
+                        </tr>);
+                })}
+            </tbody>
+        </table>);
+    }
     render() {
         var self = this;
 
         return (<div>
             <input type='file' ref={(input) => this.file = input} onChange={this.fileSelected} multiple={this.props.multiple} />
-            <Table bordered hover striped condensed>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>نام فایل</th>
-                        <th>اندازه</th>
-                        <th>پیش نمایش</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {this.state.files.map(function (f, i) {
-                        return (
-                            <tr key={i}>
-                                <td>{i + 1}</td>
-                                <td>
-                                    {
-                                        self.props.editableNames ?
-                                            <input value={f.name} onChange={(e) => self.fileNameChanged(e.target.value, i)} />
-                                            : f.name
-                                    }
-                                </td>
-                                <td>{f.size}</td>
-                                <td>{((f.type && f.type.match('image.*')) || self.isImage(f.ext)) && <img width="50" src={"data:image/png;base64," + f.file} />}</td>
-                                <td>
-                                    <Button bsStyle="danger" onClick={() => self.removeFile(i)}><i className="fa fa-trash"></i></Button>
-                                </td>
-                            </tr>);
-                    })}
-                </tbody>
-            </Table>
+            {this.renderTable()}
         </div>);
     }
 }

@@ -91,11 +91,12 @@
     <Compile Include="ResourcePaths.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\..\EDMMI\EDMMI\app\components\editableGrid.js.map">
-      <Link>app\dataControls\editableGrid.js.map</Link>
-    </None>
     <None Include="app.config" />
+    <EmbeddedResource Include="app\controls\data\editableGrid.js" />
+    <EmbeddedResource Include="app\controls\input\fileUpload.js" />
     <Content Include="app\controls\security\accessTree.js.map" />
+    <Content Include="app\controls\data\editableGrid.js.map" />
+    <Content Include="app\controls\input\fileUpload.js.map" />
     <None Include="packages.config" />
     <None Include="tsconfig.json" />
   </ItemGroup>
@@ -104,9 +105,9 @@
       <Project>{6fe39701-a44e-4f7e-9f31-52526d877281}</Project>
       <Name>Unicorn.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Unicorn.MVC\Unicorn.MVC.csproj">
+    <ProjectReference Include="..\Unicorn.Mvc\Unicorn.Mvc.csproj">
       <Project>{55f321de-1e41-40ba-957b-6ec7a635cc8d}</Project>
-      <Name>Unicorn.MVC</Name>
+      <Name>Unicorn.Mvc</Name>
     </ProjectReference>
     <ProjectReference Include="..\Unicorn.Web\Unicorn.Web.csproj">
       <Project>{12c9fad7-31f2-45ab-b1dd-0760236ea7a0}</Project>
@@ -114,19 +115,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="..\..\EDMMI\EDMMI\app\components\editableGrid.tsx">
-      <Link>app\dataControls\editableGrid.tsx</Link>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="app\controls\input\imageUpload.tsx" />
+    <TypeScriptCompile Include="app\controls\data\editableGrid.tsx" />
+    <TypeScriptCompile Include="app\controls\input\fileUpload.tsx" />
     <TypeScriptCompile Include="app\controls\security\accessTree.tsx" />
     <TypeScriptCompile Include="app\controls\security\usersEditor.tsx" />
     <TypeScriptCompile Include="lib\react-bootstrap.tsx" />
     <TypeScriptCompile Include="typings\react.d.ts" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="..\..\EDMMI\EDMMI\app\components\editableGrid.js">
-      <Link>app\dataControls\editableGrid.js</Link>
-    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="app\controls\security\EditUser.tsx" />
