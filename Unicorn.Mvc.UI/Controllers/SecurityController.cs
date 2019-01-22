@@ -51,7 +51,7 @@ namespace Unicorn.Mvc.UI.Controllers
 
         public JsonResult SaveAccesses(string userOrRoleId, string parentAction, List<AccessNodeSaveModel> accesses)
         {
-            SecurityManager.SaveUserOrRoleAcesses(userOrRoleId, parentAction, accesses);
+            SecurityManager.SaveUserOrRoleAccesses(userOrRoleId, parentAction, accesses);
             return Json(new { ok = true });
         }
 

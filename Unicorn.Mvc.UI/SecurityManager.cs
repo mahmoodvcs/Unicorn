@@ -12,11 +12,11 @@ namespace Unicorn.Mvc.UI
 {
     public static class SecurityManager
     {
-        public static void SaveUserOrRoleAcesses(string userOrRoleId, string parentAction, string receivedValue)
+        public static void SaveUserOrRoleAccesses(string userOrRoleId, string parentAction, string receivedValue)
         {
-            SaveUserOrRoleAcesses(userOrRoleId, parentAction, Newtonsoft.Json.JsonConvert.DeserializeObject<List<AccessNodeSaveModel>>(receivedValue));
+            SaveUserOrRoleAccesses(userOrRoleId, parentAction, Newtonsoft.Json.JsonConvert.DeserializeObject<List<AccessNodeSaveModel>>(receivedValue));
         }
-        public static void SaveUserOrRoleAcesses(string userOrRoleId, string parentAction, List<AccessNodeSaveModel> accesses)
+        public static void SaveUserOrRoleAccesses(string userOrRoleId, string parentAction, List<AccessNodeSaveModel> accesses)
         {
             AddActions(userOrRoleId, parentAction, accesses);
             AuthorizationManager.ClearAuthorizationCache();

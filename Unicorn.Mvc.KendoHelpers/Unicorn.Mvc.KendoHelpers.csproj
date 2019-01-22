@@ -115,7 +115,7 @@
       <Project>{6fe39701-a44e-4f7e-9f31-52526d877281}</Project>
       <Name>Unicorn.Data</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Unicorn.MVC\Unicorn.Mvc.csproj">
+    <ProjectReference Include="..\Unicorn.Mvc\Unicorn.Mvc.csproj">
       <Project>{55f321de-1e41-40ba-957b-6ec7a635cc8d}</Project>
       <Name>Unicorn.Mvc</Name>
     </ProjectReference>

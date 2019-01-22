@@ -43,6 +43,11 @@ namespace Unicorn
             return Convert.ToInt32(EnglishNumbers);
         }
 
+        public static long ToJsTime(this DateTime dateTime)
+        {
+            return (long)(dateTime - new DateTime(1970, 1, 1)).TotalMilliseconds;
+        }
+
         //public static string FormatWith(this string format, object source)
         //{
         //    return FormatWith(format, null, source);

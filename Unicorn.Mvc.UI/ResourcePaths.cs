@@ -17,14 +17,14 @@ namespace Unicorn.Mvc.UI
         public static readonly string AccessTreePath = $"{NameSpace}.app.controls.security.accessTree.js";
         public static readonly string CheckBoxTreeJsPath = $"{NameSpace}.lib.react_checkbox_tree.react-checkbox-tree.js";
         public static readonly string CheckBoxTreeCssPath = $"{NameSpace}.lib.react_checkbox_tree.react-checkbox-tree.css";
-        public static string GetResourceContentPath(string path, HtmlHelper html = null)
+        public static string GetResourceContentPath(string path, string assemblyName, HtmlHelper html = null)
         {
             UrlHelper url;
             if (html == null)
                 url = MVCHelpers.CreateUrlHelper();
             else
                 url = new UrlHelper(html.ViewContext.RequestContext);
-            return url.Content($"~/Unicorn_Resource?a={NameSpace}&r={path.Replace('/', '.')}");
+            return url.Content($"~/Unicorn_Resource?a={assemblyName}&r={path.Replace('/', '.')}");
         }
     }
 }

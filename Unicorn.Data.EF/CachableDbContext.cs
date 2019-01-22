@@ -1,8 +1,10 @@
 ﻿using EFSecondLevelCache;
 using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.Entity;
 using System.Data.Entity.Core.Objects;
+using System.Data.Entity.Infrastructure;
 using System.Data.Entity.Validation;
 using System.Linq;
 using System.Linq.Expressions;
@@ -14,6 +16,18 @@ namespace Unicorn.Data.EF
 {
     public class CachableDbContext : DbContext
     {
+        public CachableDbContext() { }
+        public CachableDbContext( string nameOrConnectionString) : base(nameOrConnectionString) { }
+        public CachableDbContext( string nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) { }
+        public CachableDbContext(DbCompiledModel model) : base(model) { }
+        public CachableDbContext(DbConnection connection, DbCompiledModel model, bool contextOwnsConnection)
+            : base(connection, model, contextOwnsConnection) { }
+        public CachableDbContext(DbConnection connection, bool contextOwnsConnection)
+            : base(connection, contextOwnsConnection) { }
+        public CachableDbContext(ObjectContext context, bool contextOwnsConnection)
+            : base(context, contextOwnsConnection) { }
+
+
         public static event EventHandler<EntitySaveEventArgs> SavingChanges;
         public static event EventHandler<EntitySaveEventArgs> SavedChanges;
         public override int SaveChanges()

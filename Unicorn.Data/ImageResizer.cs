@@ -42,13 +42,19 @@ namespace Unicorn
             return bs;
         }
 
+        public static byte[] MaxSize(byte[] imgBytes, int maxWidth, int maxHeight)
+        {
+            using (var img = GetImage(imgBytes))
+            {
+                using (var img2 = MaxSize(img, maxWidth, maxHeight))
+                {
+                    return GetBytes(img2);
+                }
+            }
+        }
         /// <summary>
         /// It will not change the image ratio.
         /// </summary>
-        /// <param name="imgPhoto"></param>
-        /// <param name="maxWidth"></param>
-        /// <param name="maxHeight"></param>
-        /// <returns></returns>
         public static Image MaxSize(Image imgPhoto, int maxWidth, int maxHeight)
         {
             float scale = (float)maxWidth / maxHeight;

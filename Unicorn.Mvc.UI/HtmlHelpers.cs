@@ -60,9 +60,9 @@ namespace Unicorn.Mvc.UI
             {
                 rendered.Add(resourcePath);
                 if (resourcePath.EndsWith(".css", StringComparison.OrdinalIgnoreCase))
-                    return new HtmlString($"<link href='{ResourcePaths.GetResourceContentPath(resourcePath, htmlHelper)}' rel=\"stylesheet\"></script>\r\n");
+                    return new HtmlString($"<link href='{ResourcePaths.GetResourceContentPath(resourcePath, ResourcePaths.NameSpace, htmlHelper)}' rel=\"stylesheet\"></script>\r\n");
                 else
-                    return new HtmlString($"<script src='{ResourcePaths.GetResourceContentPath(resourcePath, htmlHelper)}' ></script>\r\n");
+                    return new HtmlString($"<script src='{ResourcePaths.GetResourceContentPath(resourcePath, ResourcePaths.NameSpace, htmlHelper)}' ></script>\r\n");
             }
             return null;
         }
