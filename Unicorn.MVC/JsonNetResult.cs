@@ -6,6 +6,7 @@ using System.Web;
 using System.Web.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Unicorn.Mvc.JsonConverters;
 
 namespace Unicorn.Mvc
 {
@@ -13,7 +14,8 @@ namespace Unicorn.Mvc
     {
         None,
         PersianDate,
-        PersianDateTime
+        PersianDateTime,
+        Javascript
     }
     public class JsonNetResult : JsonResult
     {
@@ -32,7 +34,16 @@ namespace Unicorn.Mvc
                 Converters = new List<JsonConverter>()
             };
             if (setting.DateConvertSetting != JsonDateConvertSetting.None)
-                Settings.Converters.Add(new JsonPersianDateTimeConverter(setting.DateConvertSetting == JsonDateConvertSetting.PersianDateTime, false));
+            {
+                if (setting.DateConvertSetting == JsonDateConvertSetting.Javascript)
+                {
+                    Settings.Converters.Add(new JsDateTimeConverter());
+                }
+                else
+                {
+                    Settings.Converters.Add(new JsonPersianDateTimeConverter(setting.DateConvertSetting == JsonDateConvertSetting.PersianDateTime, false));
+                }
+            }
             if (setting.UseCamelCaseNames)
                 Settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
         }

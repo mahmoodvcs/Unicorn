@@ -103,6 +103,7 @@
     <Compile Include="CssRewriteUrlTransformWrapper.cs" />
     <Compile Include="Filters\JsonExceptionFilterAttribute.cs" />
     <Compile Include="JsonConverters\ByteArrayToBase64JsonConverter.cs" />
+    <Compile Include="JsonConverters\JsDateTimeConverter.cs" />
     <Compile Include="JsonConverters\JsonPersianDateTimeConverter.cs" />
     <Compile Include="JsonResultSettings.cs" />
     <Compile Include="MessageType.cs" />
