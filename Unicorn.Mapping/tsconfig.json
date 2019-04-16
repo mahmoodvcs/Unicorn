@@ -1,0 +1,17 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noEmitOnError": true,
+    "removeComments": false,
+    "sourceMap": true,
+    "target": "es5",
+    "jsx": "react",
+    "module": "none",
+    "lib": [ "dom", "es2018" ]
+  },
+  "exclude": [
+    "node_modules",
+    "wwwroot"
+  ]
+}
