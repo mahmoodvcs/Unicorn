@@ -19,7 +19,14 @@ namespace Unicorn.Mvc.ModelBinders
             {
                 try
                 {
-                    return Convert.FromBase64String((string)value.RawValue);
+                    var val = (string)value.RawValue;
+                    val = val.Replace(" ", "+");
+                    int mod4 = val.Length % 4;
+                    if (mod4 > 0)
+                    {
+                        val += new string('=', 4 - mod4);
+                    }
+                    return Convert.FromBase64String(val);
                 }
                 catch
                 {

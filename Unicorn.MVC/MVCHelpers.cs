@@ -18,6 +18,11 @@ namespace Unicorn.Mvc
         }
         public static void ClearErrors(this ModelStateDictionary modelState, params string[] fields)
         {
+            if (fields.Length == 0)
+            {
+                foreach (var k in modelState.Keys)
+                    modelState[k].Errors.Clear();
+            }
             foreach (var f in fields)
             {
                 if (modelState.ContainsKey(f) && modelState[f].Errors.Count > 0)

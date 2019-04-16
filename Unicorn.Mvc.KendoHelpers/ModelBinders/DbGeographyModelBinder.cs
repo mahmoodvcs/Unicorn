@@ -20,9 +20,13 @@ namespace Unicorn.Mvc.KendoHelpers.ModelBinders
             {
                 val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lat");
                 if (val == null)
+                    val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Latitude");
+                if (val == null)
                     return null;
                 latitude = val.RawValue;
                 val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Lon");
+                if (val == null)
+                    val = bindingContext.ValueProvider.GetValue(bindingContext.ModelName + ".Longitude");
                 if (val == null)
                     return null;
                 longitude = val.RawValue;
