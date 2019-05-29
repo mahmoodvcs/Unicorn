@@ -7,10 +7,8 @@ using System.Threading.Tasks;
 
 namespace Unicorn.Mapping
 {
-    public interface IGeoEvent : ILocationBased
+    public interface ILocationBased
     {
-        int Id { get; set; }
-        DateTime DateTime { get; set; }
-
+        DbGeography Location { get; set; }
     }
 }
