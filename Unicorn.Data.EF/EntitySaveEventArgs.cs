@@ -8,13 +8,14 @@ using System.Threading.Tasks;
 
 namespace Unicorn.Data.EF
 {
-    public class EntitySaveEventArgs
+    public class EntitySaveEventArgs<TContext>
+        where TContext : DbContext
     {
-        public EntitySaveEventArgs(DbContext db)
+        public EntitySaveEventArgs(TContext db)
         {
             this.DbContext = db;
         }
-        public readonly DbContext DbContext;
+        public readonly TContext DbContext;
         public IEnumerable<DbEntityEntry<T>> GetChanges<T>()
             where T : class
         {

@@ -51,14 +51,14 @@ namespace Unicorn.Mvc.KendoHelpers
         public static GridBuilder<TEntity> EntityEditor<TContext, TEntity>(this HtmlHelper html, string name
             , params DataEditorMemberMap[] memberFormMaps)
             where TEntity : class
-            where TContext : CachableDbContext, new()
+            where TContext : CachableDbContext<TContext>, new()
         {
             return EntityEditor<TContext, TEntity>(html, name, null, memberFormMaps);
         }
         public static GridBuilder<TEntity> EntityEditor<TContext, TEntity>(this HtmlHelper html, string name
             , object defaultFieldValues = null, params DataEditorMemberMap[] memberFormMaps)
             where TEntity : class
-            where TContext : CachableDbContext, new()
+            where TContext : CachableDbContext<TContext>, new()
         {
             var entityName = typeof(TEntity).Name;
             GridBuilder<TEntity> g = html.Kendo().Grid<TEntity>().Name(name);
@@ -164,7 +164,7 @@ namespace Unicorn.Mvc.KendoHelpers
         }
 
         private static bool CheckAndAddComboBoxColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, KeyValuePair<PropertyInfo, Attribute[]> p)
-            where TContext : CachableDbContext, new()
+            where TContext : CachableDbContext<TContext>, new()
             where TEntity : class
         {
             var comboAttr = p.Value.FirstOrDefault(a => a.GetType() == typeof(ComboBoxColumnAttribute)) as ComboBoxColumnAttribute;
@@ -176,7 +176,7 @@ namespace Unicorn.Mvc.KendoHelpers
         }
 
         private static void CreateForeignKeyColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, Type fkEntityType, KeyValuePair<PropertyInfo, Attribute[]> p)
-            where TContext : CachableDbContext, new()
+            where TContext : CachableDbContext<TContext>, new()
             where TEntity : class
         {
             var fkEntityId = EntityReflectionHelper.GetIdProperty(fkEntityType);
@@ -197,13 +197,13 @@ namespace Unicorn.Mvc.KendoHelpers
         }
 
         private static void CreateForeignKeyColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, KeyValuePair<PropertyInfo, Attribute[]> p, Tuple<PropertyInfo, PropertyInfo> fk)
-            where TContext : CachableDbContext, new()
+            where TContext : CachableDbContext<TContext>, new()
             where TEntity : class
         {
             var fkEntityType = fk.Item2.PropertyType;
             CreateForeignKeyColumn<TContext, TEntity>(cols, fkEntityType, p);
         }
-        static void CreateEnumColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, KeyValuePair<PropertyInfo, Attribute[]> p) where TContext : CachableDbContext, new()
+        static void CreateEnumColumn<TContext, TEntity>(GridColumnFactory<TEntity> cols, KeyValuePair<PropertyInfo, Attribute[]> p) where TContext : CachableDbContext<TContext>, new()
                     where TEntity : class
         {
             List<KeyValuePair<int, string>> data = new List<KeyValuePair<int, string>>();
