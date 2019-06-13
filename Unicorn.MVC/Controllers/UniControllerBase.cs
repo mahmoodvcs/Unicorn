@@ -90,7 +90,7 @@ namespace Unicorn.Mvc.Controllers
         }
         public virtual JsonResult OK()
         {
-            return Json(new { ok = true });
+            return Json(new { ok = true }, JsonRequestBehavior.AllowGet);
         }
         public void ShowMessage(string msg, MessageType type = MessageType.Info, bool closable = true)
         {

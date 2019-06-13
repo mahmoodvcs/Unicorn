@@ -14,11 +14,12 @@ using System.Threading.Tasks;
 
 namespace Unicorn.Data.EF
 {
-    public class CachableDbContext : DbContext
+    public abstract class CachableDbContext<TContext> : DbContext
+        where TContext : CachableDbContext<TContext>
     {
         public CachableDbContext() { }
-        public CachableDbContext( string nameOrConnectionString) : base(nameOrConnectionString) { }
-        public CachableDbContext( string nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) { }
+        public CachableDbContext(string nameOrConnectionString) : base(nameOrConnectionString) { }
+        public CachableDbContext(string nameOrConnectionString, DbCompiledModel model) : base(nameOrConnectionString, model) { }
         public CachableDbContext(DbCompiledModel model) : base(model) { }
         public CachableDbContext(DbConnection connection, DbCompiledModel model, bool contextOwnsConnection)
             : base(connection, model, contextOwnsConnection) { }
@@ -28,8 +29,20 @@ namespace Unicorn.Data.EF
             : base(context, contextOwnsConnection) { }
 
 
-        public static event EventHandler<EntitySaveEventArgs> SavingChanges;
-        public static event EventHandler<EntitySaveEventArgs> SavedChanges;
+        public static event EventHandler<EntitySaveEventArgs<TContext>> SavingChanges;
+        public static event EventHandler<EntitySaveEventArgs<TContext>> SavedChanges;
+
+        public override async Task<int> SaveChangesAsync()
+        {
+            try
+            {
+                return await SaveAllChangesAsync();
+            }
+            catch (DbEntityValidationException ex)
+            {
+                throw GetEntityValidatoinErrors(ex);
+            }
+        }
         public override int SaveChanges()
         {
             try
@@ -38,23 +51,28 @@ namespace Unicorn.Data.EF
             }
             catch (DbEntityValidationException ex)
             {
-                var sb = new StringBuilder();
-
-                foreach (var failure in ex.EntityValidationErrors)
-                {
-                    sb.AppendFormat("{0} failed validation\n", failure.Entry.Entity.GetType());
-                    foreach (var error in failure.ValidationErrors)
-                    {
-                        sb.AppendFormat("- {0} : {1}", error.PropertyName, error.ErrorMessage);
-                        sb.AppendLine();
-                    }
-                }
-
-                throw new DbEntityValidationException(
-                    "Entity Validation Failed - errors follow:\n" +
-                    sb.ToString(), ex
-                    ); // Add the original exception as the innerException
+                throw GetEntityValidatoinErrors(ex);
             }
+        }
+
+        private static DbEntityValidationException GetEntityValidatoinErrors(DbEntityValidationException ex)
+        {
+            var sb = new StringBuilder();
+
+            foreach (var failure in ex.EntityValidationErrors)
+            {
+                sb.AppendFormat("{0} failed validation\n", failure.Entry.Entity.GetType());
+                foreach (var error in failure.ValidationErrors)
+                {
+                    sb.AppendFormat("- {0} : {1}", error.PropertyName, error.ErrorMessage);
+                    sb.AppendLine();
+                }
+            }
+
+            return new DbEntityValidationException(
+                "Entity Validation Failed - errors follow:\n" +
+                sb.ToString(), ex
+                ); // Add the original exception as the innerException
         }
 
         private string[] getChangedEntityNames()
@@ -69,14 +87,26 @@ namespace Unicorn.Data.EF
         }
         int SaveAllChanges(bool invalidateCacheDependencies = true)
         {
-            SavingChanges?.Invoke(this, new EntitySaveEventArgs(this));
+            SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
             var changedEntityNames = getChangedEntityNames();
             var result = base.SaveChanges();
             if (invalidateCacheDependencies)
             {
                 new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
             }
-            SavedChanges?.Invoke(this, new EntitySaveEventArgs(this));
+            SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+            return result;
+        }
+        async Task<int> SaveAllChangesAsync(bool invalidateCacheDependencies = true)
+        {
+            SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+            var changedEntityNames = getChangedEntityNames();
+            var result = await base.SaveChangesAsync();
+            if (invalidateCacheDependencies)
+            {
+                new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
+            }
+            SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
             return result;
         }
 
