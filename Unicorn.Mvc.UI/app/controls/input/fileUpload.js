@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -101,42 +104,55 @@ var FileUpload = /** @class */ (function (_super) {
     };
     FileUpload.prototype.renderConsice = function () {
         var _this = this;
-        return (React.createElement("div", { style: "float: right;" }, this.state.files.map(function (f, i) {
-            return (React.createElement("div", null,
-                React.createElement("img", { width: "50", src: "data:image/png;base64," + f.file }),
-                React.createElement("button", { className: "btn btn-xs btn-danger", onClick: function () { return _this.removeFile(i); } },
-                    React.createElement("i", { className: "fa fa-trash" }))));
-        })));
+        return (<div style="float: right;">
+            {this.state.files.map(function (f, i) {
+            return (<div>
+                    <img width="50" src={"data:image/png;base64," + f.file}/>
+                    <button className="btn btn-xs btn-danger" onClick={function () { return _this.removeFile(i); }}>
+                        <i className="fa fa-trash"></i>
+                        </button>
+                </div>);
+        })}
+        </div>);
     };
     FileUpload.prototype.renderTable = function () {
         var _this = this;
-        return (React.createElement("table", { className: "table-bordered table-hover table-striped table-condensed" },
-            React.createElement("thead", null,
-                React.createElement("tr", null,
-                    React.createElement("th", null, "#"),
-                    React.createElement("th", null, "\u0646\u0627\u0645 \u0641\u0627\u06CC\u0644"),
-                    React.createElement("th", null, "\u0627\u0646\u062F\u0627\u0632\u0647"),
-                    React.createElement("th", null, "\u067E\u06CC\u0634 \u0646\u0645\u0627\u06CC\u0634"),
-                    React.createElement("th", null))),
-            React.createElement("tbody", null, this.state.files.map(function (f, i) {
-                return (React.createElement("tr", { key: i },
-                    React.createElement("td", null, i + 1),
-                    React.createElement("td", null, _this.props.editableNames ?
-                        React.createElement("input", { value: f.name, onChange: function (e) { return _this.fileNameChanged(e.target.value, i); } })
-                        : f.name),
-                    React.createElement("td", null, f.size),
-                    React.createElement("td", null, ((f.type && f.type.match('image.*')) || _this.isImage(f.ext)) && React.createElement("img", { width: "50", src: "data:image/png;base64," + f.file })),
-                    React.createElement("td", null,
-                        React.createElement("button", { className: "btn btn-danger", onClick: function () { return _this.removeFile(i); } },
-                            React.createElement("i", { className: "fa fa-trash" })))));
-            }))));
+        return (<table className="table-bordered table-hover table-striped table-condensed">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>نام فایل</th>
+                    <th>اندازه</th>
+                    <th>پیش نمایش</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {this.state.files.map(function (f, i) {
+            return (<tr key={i}>
+                            <td>{i + 1}</td>
+                            <td>
+                                {_this.props.editableNames ?
+                <input value={f.name} onChange={function (e) { return _this.fileNameChanged(e.target.value, i); }}/>
+                : f.name}
+                            </td>
+                            <td>{f.size}</td>
+                            <td>{((f.type && f.type.match('image.*')) || _this.isImage(f.ext)) && <img width="50" src={"data:image/png;base64," + f.file}/>}</td>
+                            <td>
+                                <button className="btn btn-danger" onClick={function () { return _this.removeFile(i); }}><i className="fa fa-trash"></i></button>
+                            </td>
+                        </tr>);
+        })}
+            </tbody>
+        </table>);
     };
     FileUpload.prototype.render = function () {
         var _this = this;
         var self = this;
-        return (React.createElement("div", null,
-            React.createElement("input", { type: 'file', ref: function (input) { return _this.file = input; }, onChange: this.fileSelected, multiple: this.props.multiple }),
-            this.renderTable()));
+        return (<div>
+            <input type='file' ref={function (input) { return _this.file = input; }} onChange={this.fileSelected} multiple={this.props.multiple}/>
+            {this.renderTable()}
+        </div>);
     };
     return FileUpload;
 }(React.Component));

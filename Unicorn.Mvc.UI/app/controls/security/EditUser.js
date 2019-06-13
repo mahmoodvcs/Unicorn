@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -71,21 +74,26 @@ var EditUser = /** @class */ (function (_super) {
         var u = this.state.user;
         var lu = Link.state(this, "user");
         var links = lu.pick("username", "password", "name", "email", "type");
-        return (React.createElement("div", null,
-            React.createElement(Dialog, { onOK: this.onSubmit, onCancel: this.onCancel, show: this.props.show, title: this.props.title },
-                React.createElement(FieldGroup, { label: "User Name", readOnly: u.id > 0, valueLink: links.username }),
-                u.id == 0 &&
-                    React.createElement(FieldGroup, { label: "Password", type: "password", valueLink: links.password }),
-                React.createElement(FieldGroup, { label: "Name", valueLink: links.name }),
-                React.createElement(FieldGroup, { label: "Email Address", valueLink: links.email }),
-                u.id == 0 &&
-                    React.createElement(FieldGroup, { label: "User Type", type: "custom" },
-                        React.createElement(UserTypeSelector, { valueLink: links.type })),
-                u.id > 0 &&
-                    React.createElement(Button, { type: "button", bsStyle: "warning", onClick: function () { return _this.resetPassword(); } },
-                        React.createElement("i", { className: "fa fa-key" }),
-                        " Reset Password")),
-            React.createElement(ResetPassword, { onClose: function () { return _this.setState({ resettingPassword: false }); }, show: this.state.resettingPassword, user: u })));
+        return (<div>
+            <Dialog onOK={this.onSubmit} onCancel={this.onCancel} show={this.props.show} title={this.props.title}>
+                <FieldGroup label="User Name" readOnly={u.id > 0} valueLink={links.username}></FieldGroup>
+                {u.id == 0 &&
+            <FieldGroup label="Password" type="password" valueLink={links.password}></FieldGroup>}
+                <FieldGroup label="Name" valueLink={links.name}></FieldGroup>
+                <FieldGroup label="Email Address" valueLink={links.email}></FieldGroup>
+                {u.id == 0 &&
+            <FieldGroup label="User Type" type="custom">
+                        <UserTypeSelector valueLink={links.type}></UserTypeSelector>
+                    </FieldGroup>}
+                {u.id > 0 &&
+            <Button type="button" bsStyle="warning" onClick={function () { return _this.resetPassword(); }}>
+                        <i className="fa fa-key"></i> Reset Password
+                    </Button>}
+            </Dialog>
+            <ResetPassword onClose={function () { return _this.setState({ resettingPassword: false }); }} show={this.state.resettingPassword} user={u}>
+            </ResetPassword>
+
+        </div>);
     };
     return EditUser;
 }(React.Component));

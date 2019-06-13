@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -103,10 +106,10 @@ var EditableGrid = /** @class */ (function (_super) {
         }
         var editor = c.editor | EditableGridEditorType.text;
         if (editor == EditableGridEditorType.color)
-            return React.createElement("span", { style: { backgroundColor: row[c.field], width: 40, height: 20, display: "inline-block" } }, "\u00A0");
+            return <span style={{ backgroundColor: row[c.field], width: 40, height: 20, display: "inline-block" }}>&nbsp;</span>;
         else if (editor == EditableGridEditorType.image) {
             if (row[c.field])
-                return React.createElement("img", { width: "50", src: "data:image/png;base64," + row[c.field] });
+                return <img width="50" src={"data:image/png;base64," + row[c.field]}/>;
             else
                 return null;
         }
@@ -117,14 +120,14 @@ var EditableGrid = /** @class */ (function (_super) {
         if (typeof (c.editor) == "number" || typeof (c.editor) == "undefined") {
             var editor = c.editor | EditableGridEditorType.text;
             if (editor == EditableGridEditorType.image) {
-                return React.createElement(FileUpload, { files: [{ file: row[c.field] }], onChange: function (files) {
-                        if (files.length == 0)
-                            row[c.field] = null;
-                        else
-                            row[c.field] = files[0].file;
-                    } });
+                return <FileUpload files={[{ file: row[c.field] }]} onChange={function (files) {
+                    if (files.length == 0)
+                        row[c.field] = null;
+                    else
+                        row[c.field] = files[0].file;
+                }}/>;
             }
-            return React.createElement("input", { type: EditableGridEditorType[editor], className: editor == EditableGridEditorType.color ? "" : "form-control", onChange: function (e) { return _this.valueChanged(c.field, e.target.value); }, value: row[c.field] });
+            return <input type={EditableGridEditorType[editor]} className={editor == EditableGridEditorType.color ? "" : "form-control"} onChange={function (e) { return _this.valueChanged(c.field, e.target.value); }} value={row[c.field]}/>;
         }
         else if (c.editor.prototype.isReactComponent) {
             return React.createElement(c.editor, { value: row[c.field], onChange: function (v) { return _this.valueChanged(c.field, v); } });
@@ -145,24 +148,36 @@ var EditableGrid = /** @class */ (function (_super) {
             editingIndex = null;
         }
         var self = this;
-        var columns = this.props.columns.map(function (c, i) { return (React.createElement("td", { key: i }, editingIndex == index ? self.getEditor(c, row) : self.getDisplay(c, row))); });
+        var columns = this.props.columns.map(function (c, i) { return (<td key={i}>
+            {editingIndex == index ? self.getEditor(c, row) : self.getDisplay(c, row)}
+        </td>); });
         if (index == editingIndex) {
-            columns.push(React.createElement("td", { key: "ok" },
-                React.createElement("button", { className: "btn btn-sm btn-success", onClick: function (e) { return _this.editRowOK(e); } },
-                    React.createElement("i", { className: "fa fa-check" }))));
-            columns.push(React.createElement("td", { key: "cancel" },
-                React.createElement("button", { className: "btn btn-sm btn-warning", onClick: function (e) { return _this.editRowCancel(e); } },
-                    React.createElement("i", { className: "fa fa-close" }))));
+            columns.push(<td key="ok">
+                <button className="btn btn-sm btn-success" onClick={function (e) { return _this.editRowOK(e); }}>
+                    <i className="fa fa-check"></i>
+                </button>
+            </td>);
+            columns.push(<td key="cancel">
+                <button className="btn btn-sm btn-warning" onClick={function (e) { return _this.editRowCancel(e); }}>
+                    <i className="fa fa-close"></i>
+                </button>
+            </td>);
         }
         else {
-            columns.push(React.createElement("td", { key: "edit" },
-                React.createElement("button", { className: "btn btn-sm btn-primary", onClick: function (e) { return _this.editRow(e, index); } },
-                    React.createElement("i", { className: "fa fa-pencil" }))));
-            columns.push(React.createElement("td", { key: "delete" },
-                React.createElement("button", { className: "btn btn-sm btn-danger", onClick: function (e) { return _this.deleteRow(e, index); } },
-                    React.createElement("i", { className: "fa fa-trash" }))));
+            columns.push(<td key="edit">
+                <button className="btn btn-sm btn-primary" onClick={function (e) { return _this.editRow(e, index); }}>
+                    <i className="fa fa-pencil"></i>
+                </button>
+            </td>);
+            columns.push(<td key="delete">
+                <button className="btn btn-sm btn-danger" onClick={function (e) { return _this.deleteRow(e, index); }}>
+                    <i className="fa fa-trash"></i>
+                </button>
+            </td>);
         }
-        return (React.createElement("tr", { key: index }, columns));
+        return (<tr key={index}>
+            {columns}
+        </tr>);
     };
     EditableGrid.prototype.getData = function () {
         var data = [];
@@ -178,15 +193,26 @@ var EditableGrid = /** @class */ (function (_super) {
         var _this = this;
         var data = this.getData();
         var editor = this.props.editorTemplate;
-        return (React.createElement("div", null,
-            React.createElement("button", { type: "button", className: "btn btn-primary", onClick: function (e) { return _this.add(e); } },
-                React.createElement("i", { className: "fa fa-plus" })),
-            React.createElement("table", { className: "table table-bordered table-stripped" },
-                React.createElement("thead", null,
-                    React.createElement("tr", null, this.props.columns.map(function (c, i) { return React.createElement("td", { key: i }, c.title); }))),
-                React.createElement("tbody", null, data.map(function (r, i) { return _this.renderRow(r, i); }))),
-            this.state.editingData && this.state.editingInPopup &&
-                React.createElement(Dialog, { show: true, onOK: this.editRowOK, title: "\u0648\u06CC\u0631\u0627\u06CC\u0634", onCancel: this.editRowCancel }, editor && React.createElement(editor, { row: this.state.editingData, onChange: function (r) { return _this.setState({ editingData: r }); } }))));
+        return (<div>
+                <button type="button" className="btn btn-primary" onClick={function (e) { return _this.add(e); }}>
+                    <i className="fa fa-plus"></i></button>
+                <table className="table table-bordered table-stripped">
+                    <thead>
+                        <tr>
+                            {this.props.columns.map(function (c, i) { return <td key={i}>
+                                {c.title}
+                            </td>; })}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {data.map(function (r, i) { return _this.renderRow(r, i); })}
+                    </tbody>
+                </table>
+                {this.state.editingData && this.state.editingInPopup &&
+            <Dialog show={true} onOK={this.editRowOK} title="ویرایش" onCancel={this.editRowCancel}>
+                        {editor && React.createElement(editor, { row: this.state.editingData, onChange: function (r) { return _this.setState({ editingData: r }); } })}
+                    </Dialog>}
+            </div>);
     };
     return EditableGrid;
 }(React.Component));

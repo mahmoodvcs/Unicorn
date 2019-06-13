@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +11,7 @@ namespace Unicorn.Mvc
     {
         public JsonDateConvertSetting DateConvertSetting { get; set; } = JsonDateConvertSetting.PersianDate;
         public bool UseCamelCaseNames { get; set; } = false;
+        public List<JsonConverter> CustomConverters { get; set; } = new List<JsonConverter>();
+
     }
 }

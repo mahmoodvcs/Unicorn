@@ -28,7 +28,7 @@ namespace Unicorn.Mapping.Utilities
                     miny = l.Latitude.Value;
             }
 
-            return new Tuple<DbGeography, DbGeography>(GeoUtils.CreatePoint(minx, miny), GeoUtils.CreatePoint(maxx, maxy));
+            return new Tuple<DbGeography, DbGeography>(GeoUtils.CreatePoint(miny, minx), GeoUtils.CreatePoint(maxy, maxx));
         }
     }
 }

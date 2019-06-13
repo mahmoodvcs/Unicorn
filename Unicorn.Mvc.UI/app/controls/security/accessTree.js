@@ -1,7 +1,10 @@
 var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
     return function (d, b) {
         extendStatics(d, b);
         function __() { this.constructor = d; }
@@ -23,8 +26,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     function step(op) {
         if (f) throw new TypeError("Generator is already executing.");
         while (_) try {
-            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [0, t.value];
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
             switch (op[0]) {
                 case 0: case 1: t = op; break;
                 case 4: _.label++; return { value: op[1], done: false };
@@ -118,7 +121,7 @@ var AccessTree = /** @class */ (function (_super) {
             var action = parentAction == null ? ac.action : parentAction + "." + ac.action;
             var node = {
                 value: action,
-                label: React.createElement("span", null, ac.title)
+                label: <span>{ac.title}</span>
             };
             nodes.push(node);
             //if (actions[i].expanded)
@@ -135,7 +138,7 @@ var AccessTree = /** @class */ (function (_super) {
                 node.children = [this.getNode("در حال بارگذاری ...", action + ("." + nodeSpecialValuePrefix + "loading"))];
                 if (ac.access == NodeAccessType.SubNodes) {
                     node.children.push({
-                        label: React.createElement("span", null, "..."),
+                        label: <span>...</span>,
                         value: action + ("." + nodeSpecialValuePrefix + "check"),
                     });
                     checks.push(action + ("." + nodeSpecialValuePrefix + "check"));
@@ -151,7 +154,7 @@ var AccessTree = /** @class */ (function (_super) {
     };
     AccessTree.prototype.getNode = function (label, value) {
         return {
-            label: React.createElement("span", null, label),
+            label: <span>{label}</span>,
             value: value
         };
     };
@@ -362,9 +365,11 @@ var AccessTree = /** @class */ (function (_super) {
         var _this = this;
         var _a = this.createNodes(), nodes = _a.nodes, checks = _a.checks;
         this.checked = checks;
-        return (React.createElement("div", null,
-            React.createElement(ReactCheckboxTree, { nodes: nodes, checked: checks, expanded: this.state.expanded, onExpand: this.onExpand, onCheck: this.onCheck, showNodeIcon: false }),
-            this.props.hiddenInputId == null && React.createElement("button", { type: "button", className: "btn btn-sucess", onClick: function () { return _this.save(); } }, "Save")));
+        return (<div><ReactCheckboxTree nodes={nodes} checked={checks} expanded={this.state.expanded} onExpand={this.onExpand} onCheck={this.onCheck} showNodeIcon={false}>
+
+        </ReactCheckboxTree>
+            {this.props.hiddenInputId == null && <button type="button" className="btn btn-sucess" onClick={function () { return _this.save(); }}>Save</button>}
+        </div>);
     };
     return AccessTree;
 }(React.Component));
