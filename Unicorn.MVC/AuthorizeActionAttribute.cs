@@ -15,9 +15,9 @@ namespace Unicorn.Mvc
         public static string UnauthorizedRedirectAction { get; set; }
         public static string UnauthorizedRedirectController { get; set; }
         public static string AdministratorRoles { get; set; }
-        public AuthorizeActionAttribute(string action)
+        public AuthorizeActionAttribute(params string[] actions)
         {
-            this.action = action;
+            this.actions = actions;
             if (!string.IsNullOrEmpty(AdministratorRoles))
                 if (string.IsNullOrEmpty(base.Roles))
                     base.Roles = AdministratorRoles;
@@ -25,12 +25,12 @@ namespace Unicorn.Mvc
                     base.Roles += "," + AdministratorRoles;
 
         }
-        string action;
+        string[] actions;
 
-        public string Action
+        public string[] Actions
         {
-            get { return action; }
-            set { action = value; }
+            get { return actions; }
+            set { actions = value; }
         }
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
@@ -40,9 +40,14 @@ namespace Unicorn.Mvc
             IPrincipal user = httpContext.User;
             if (!user.Identity.IsAuthenticated)
                 return false;
-            var access = AuthorizationChecker.HasAccess(httpContext.User.Identity.Name, action);
-            if (access || (string.IsNullOrEmpty(Roles) && string.IsNullOrEmpty(Users)))
-                return access;
+            foreach (var ac in actions)
+            {
+                var access = AuthorizationChecker.HasAccess(httpContext.User.Identity.Name, ac);
+                if (access)
+                    return true;
+            }
+            if (string.IsNullOrEmpty(Roles) && string.IsNullOrEmpty(Users))
+                return false;
 
             return base.AuthorizeCore(httpContext);
         }

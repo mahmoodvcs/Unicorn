@@ -44,6 +44,10 @@ namespace Unicorn.Mvc
                     Settings.Converters.Add(new JsonPersianDateTimeConverter(setting.DateConvertSetting == JsonDateConvertSetting.PersianDateTime, false));
                 }
             }
+            foreach (var c in setting.CustomConverters)
+            {
+                Settings.Converters.Add(c);
+            }
             if (setting.UseCamelCaseNames)
                 Settings.ContractResolver = new CamelCasePropertyNamesContractResolver();
         }
