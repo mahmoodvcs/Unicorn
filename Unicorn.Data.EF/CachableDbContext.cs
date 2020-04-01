@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace Unicorn.Data.EF
 {
@@ -87,27 +88,35 @@ namespace Unicorn.Data.EF
         }
         int SaveAllChanges(bool invalidateCacheDependencies = true)
         {
-            SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
-            var changedEntityNames = getChangedEntityNames();
-            var result = base.SaveChanges();
-            if (invalidateCacheDependencies)
+            using (var tr = new TransactionScope(TransactionScopeOption.Required, TransactionScopeAsyncFlowOption.Enabled))
             {
-                new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
+                SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+                var changedEntityNames = getChangedEntityNames();
+                var result = base.SaveChanges();
+                if (invalidateCacheDependencies)
+                {
+                    new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
+                }
+                SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+                tr.Complete();
+                return result;
             }
-            SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
-            return result;
         }
         async Task<int> SaveAllChangesAsync(bool invalidateCacheDependencies = true)
         {
-            SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
-            var changedEntityNames = getChangedEntityNames();
-            var result = await base.SaveChangesAsync();
-            if (invalidateCacheDependencies)
+            using (var tr = new TransactionScope(TransactionScopeOption.Required, TransactionScopeAsyncFlowOption.Enabled))
             {
-                new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
+                SavingChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+                var changedEntityNames = getChangedEntityNames();
+                var result = await base.SaveChangesAsync();
+                if (invalidateCacheDependencies)
+                {
+                    new EFCacheServiceProvider().InvalidateCacheDependencies(changedEntityNames);
+                }
+                SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
+                tr.Complete();
+                return result;
             }
-            SavedChanges?.Invoke(this, new EntitySaveEventArgs<TContext>((TContext)this));
-            return result;
         }
 
 
