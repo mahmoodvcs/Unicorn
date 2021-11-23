@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
 namespace Unicorn
@@ -56,11 +57,17 @@ namespace Unicorn
 		{
 			object[] attrs = typeMember.GetCustomAttributes(typeof(TitleAttribute), false);
 			string title = null;
-			if (attrs.Length > 0)
+            title = name;
+            if (attrs.Length > 0)
 				title = ((TitleAttribute)attrs[0]).Title;
-			else
-				title = name;
-			return title;
+            else
+            {
+                attrs = typeMember.GetCustomAttributes(typeof(DisplayAttribute), false);
+                if (attrs.Length > 0)
+                    title = ((DisplayAttribute)attrs[0]).Name;
+            }
+
+            return title;
 		}
 
 	}

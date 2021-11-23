@@ -86,6 +86,7 @@ namespace Unicorn.Mvc.Controllers
         //}
         public virtual JsonResult Error(string msg)
         {
+            Response.StatusCode = 500;
             return Json(new { ok = false, message = msg }, JsonRequestBehavior.AllowGet);
         }
         public virtual JsonResult OK()

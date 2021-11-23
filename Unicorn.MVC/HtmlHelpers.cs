@@ -43,7 +43,7 @@ namespace Unicorn.Mvc
                 }
             return MvcHtmlString.Create(builder.ToString());
         }
-        public static MvcHtmlString DropDownForEnum<EnumType>(this HtmlHelper html, string name, EnumType? value, object htmlAttributes = null) where EnumType:struct
+        public static MvcHtmlString DropDownForEnum<EnumType>(this HtmlHelper html, string name, EnumType? value, object htmlAttributes = null, bool addEmptyItem = false, string emptyItemValue = null) where EnumType:struct
         {
             var type = typeof(EnumType);
             if (!type.IsEnum)
@@ -51,6 +51,12 @@ namespace Unicorn.Mvc
             var builder = new TagBuilder("select");
             builder.GenerateId(name);
             builder.MergeAttribute("name", name);
+            if (addEmptyItem)
+            {
+                TagBuilder op = new TagBuilder("option");
+                op.Attributes["value"] =  emptyItemValue;
+                builder.InnerHtml += op.ToString();
+            }
             foreach (var n in Enum.GetNames(type))
             {
                 var title = TitleAttribute.GetTitle(type.GetField(n, BindingFlags.Public | BindingFlags.Static), n);

@@ -31,7 +31,11 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public static PageableBuilder Localize(this PageableBuilder pg)
         {
-             return pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
+            return pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
+        }
+        public static GridPageableSettingsBuilder Localize(this GridPageableSettingsBuilder pg)
+        {
+            return pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
         }
         public static PageableMessagesBuilder Localize(this PageableMessagesBuilder msg)
         {
@@ -55,7 +59,7 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public static void Localize(this FilterableMessagesBuilder msg)
         {
-            msg.And("و").Cancel("لغو").Clear("حذف فیلتر").Filter("فیلتر").Info("")
+            msg.And("و").Clear("حذف فیلتر").Filter("فیلتر").Info("")
                 .Or("یا").SelectValue("انتخاب مقدار").Value("مقدار").IsTrue("بله").IsFalse("خیر");
         }
         public static void AddCreateLocalize<T>(this GridToolBarCommandFactory<T> c) where T : class
