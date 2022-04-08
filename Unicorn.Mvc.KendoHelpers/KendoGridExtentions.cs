@@ -4,12 +4,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Unicorn.Mvc.KendoHelpers
 {
     public static class KendoGridExtentions
     {
+        public delegate string TranslateDelegate(string s);
+        public static TranslateDelegate Translate { get; set; } = KendoGridExtentions.NoTranslation;
+
         public static GridBuilder<T> DoConfig<T>(this GridBuilder<T> g) where T : class
         {
             g.Pageable(pg => pg.Localize()).Filterable(f => f.Localize());
@@ -31,6 +35,8 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public static PageableBuilder Localize(this PageableBuilder pg)
         {
+            if (!Thread.CurrentThread.CurrentCulture.Name.StartsWith("fa"))
+                return pg;
             return pg.Messages(msg => msg.Localize()).PageSizes(new int[] { 10, 20, 50, 100 }).Refresh(true);
         }
         public static GridPageableSettingsBuilder Localize(this GridPageableSettingsBuilder pg)
@@ -49,6 +55,8 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public static FilterableOperatorsBuilder Localize(this FilterableOperatorsBuilder op)
         {
+            if (!Thread.CurrentThread.CurrentCulture.Name.StartsWith("fa"))
+                return op;
             op.ForNumber(fn => fn.IsEqualTo("برایر با").IsGreaterThan("بزرگتر از").IsGreaterThanOrEqualTo("بزرگتر یا مساوی با")
                 .IsLessThan("کوچکتر از").IsLessThanOrEqualTo("کوچکتر یا مساوی با").IsNotEqualTo("مخالف با")
                 ).ForString(s =>
@@ -59,6 +67,8 @@ namespace Unicorn.Mvc.KendoHelpers
         }
         public static void Localize(this FilterableMessagesBuilder msg)
         {
+            if (!Thread.CurrentThread.CurrentCulture.Name.StartsWith("fa"))
+                return;
             msg.And("و").Clear("حذف فیلتر").Filter("فیلتر").Info("")
                 .Or("یا").SelectValue("انتخاب مقدار").Value("مقدار").IsTrue("بله").IsFalse("خیر");
         }
@@ -75,6 +85,10 @@ namespace Unicorn.Mvc.KendoHelpers
             return c;
         }
         public static string Localize(this string s)
+        {
+            return Translate(s);
+        }
+        public static string NoTranslation(this string s)
         {
             return s;
         }
