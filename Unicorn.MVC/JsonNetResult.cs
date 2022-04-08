@@ -5,6 +5,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Unicorn.Mvc.JsonConverters;
 
@@ -15,7 +16,8 @@ namespace Unicorn.Mvc
         None,
         PersianDate,
         PersianDateTime,
-        Javascript
+        Javascript,
+        Gregorian
     }
     public class JsonNetResult : JsonResult
     {
@@ -38,6 +40,13 @@ namespace Unicorn.Mvc
                 if (setting.DateConvertSetting == JsonDateConvertSetting.Javascript)
                 {
                     Settings.Converters.Add(new JsDateTimeConverter());
+                }
+                else if(setting.DateConvertSetting == JsonDateConvertSetting.Gregorian)
+                {
+                    Settings.Converters.Add(new IsoDateTimeConverter()
+                    {
+                        DateTimeFormat = "G"
+                    });
                 }
                 else
                 {
