@@ -10,7 +10,7 @@ using Unicorn.Web.Security.Authorization;
 namespace Unicorn.Mvc
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, Inherited = false, AllowMultiple = true)]
-    public sealed class AuthorizeActionAttribute : AuthorizeAttribute
+    public class AuthorizeActionAttribute : AuthorizeAttribute
     {
         public static string UnauthorizedRedirectAction { get; set; }
         public static string UnauthorizedRedirectController { get; set; }
@@ -32,6 +32,8 @@ namespace Unicorn.Mvc
             get { return actions; }
             set { actions = value; }
         }
+        public static Action<AuthorizationContext> UnauthorizedRequestHandler { get; set; }
+
         protected override bool AuthorizeCore(HttpContextBase httpContext)
         {
             if (httpContext == null)
@@ -57,7 +59,10 @@ namespace Unicorn.Mvc
         //}
         protected override void HandleUnauthorizedRequest(AuthorizationContext filterContext)
         {
-            if (!string.IsNullOrEmpty(UnauthorizedRedirectAction) && !string.IsNullOrEmpty(UnauthorizedRedirectController))
+            if (UnauthorizedRequestHandler != null)
+                UnauthorizedRequestHandler(filterContext);
+            else if (!string.IsNullOrEmpty(UnauthorizedRedirectAction) && !string.IsNullOrEmpty(UnauthorizedRedirectController))
+            {
                 filterContext.Result = new RedirectToRouteResult(
                             new RouteValueDictionary(
                                 new
@@ -66,6 +71,7 @@ namespace Unicorn.Mvc
                                     action = UnauthorizedRedirectAction
                                 })
                             );
+            }
             else
                 base.HandleUnauthorizedRequest(filterContext);
         }
