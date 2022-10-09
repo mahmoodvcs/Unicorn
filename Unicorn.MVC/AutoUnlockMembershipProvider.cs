@@ -9,12 +9,12 @@ namespace Unicorn.Mvc
 {
     public class AutoUnlockMembershipProvider : System.Web.Providers.DefaultMembershipProvider
     {
-        private int autoUnlockTimeout = 60;    //Default to 60 minutes
+        public int AutoUnlockTimeout { get; private set; } = 60;
         public override void Initialize(string name, System.Collections.Specialized.NameValueCollection config)
         {
             string sunlockTimeOut = config["autoUnlockTimeout"];
             if (!String.IsNullOrEmpty(sunlockTimeOut))
-                autoUnlockTimeout = Int32.Parse(sunlockTimeOut);
+                AutoUnlockTimeout = Int32.Parse(sunlockTimeOut);
             config.Remove("autoUnlockTimeout");
             base.Initialize(name, config);
         }
@@ -24,7 +24,7 @@ namespace Unicorn.Mvc
             MembershipUser mu = this.GetUser(username, false);
             if ((mu != null) &&
               (mu.IsLockedOut) &&
-              (mu.LastLockoutDate.ToUniversalTime().AddMinutes(autoUnlockTimeout) < DateTime.UtcNow))
+              (mu.LastLockoutDate.ToUniversalTime().AddMinutes(AutoUnlockTimeout) < DateTime.UtcNow))
             {
                 bool retval = mu.UnlockUser();
                 if (retval)
